@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -54,9 +55,43 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
+        HashSet<ChessMove> returnList = new HashSet<>();
         switch(piece.getPieceType()) {
             case BISHOP:
-                return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8), null));
+                int row = myPosition.getRow();
+                int col = myPosition.getColumn();
+                //Diagonal Left and Down
+                while (row > 1 && col > 1){
+                    row -= 1;
+                    col -= 1;
+                    returnList.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()), new ChessPosition(row,col), null));
+                }
+                row = myPosition.getRow();
+                col = myPosition.getColumn();
+                //Diagonal Left and Up
+                while (row < 8 && col > 1){
+                    row += 1;
+                    col -= 1;
+                    returnList.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()), new ChessPosition(row,col), null));
+                }
+                row = myPosition.getRow();
+                col = myPosition.getColumn();
+                //Diagonal Right and Up
+                while (row < 8 && col < 8){
+                    row += 1;
+                    col += 1;
+                    returnList.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()), new ChessPosition(row,col), null));
+                }
+                row = myPosition.getRow();
+                col = myPosition.getColumn();
+                //Diagonal Right and Down
+                while (row > 1 && col < 8){
+                    row -= 1;
+                    col += 1;
+                    returnList.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()), new ChessPosition(row,col), null));
+                }
+                System.out.println("Got here");
+                return returnList;
             case KNIGHT:
                 return List.of();
             case QUEEN:
