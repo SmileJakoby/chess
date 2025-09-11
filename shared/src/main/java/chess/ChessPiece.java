@@ -90,10 +90,68 @@ public class ChessPiece {
                 //Up and left
                 generateMoves(board, myPosition, myPosition, returnList, 1, -1, true);
                 return returnList;
+            case KING:
+                //The generateMoves function was designed for recursive pieces. The knight and King suffer for this.
+                //Up
+                generateMoves(board, myPosition, myPosition, returnList, 1, 0, false);
+                //UpRight
+                generateMoves(board, myPosition, myPosition, returnList, 1, 1, false);
+                //Right
+                generateMoves(board, myPosition, myPosition, returnList, 0, 1, false);
+                //RightDown
+                generateMoves(board, myPosition, myPosition, returnList, -1, 1, false);
+                //Down
+                generateMoves(board, myPosition, myPosition, returnList, -1, 0, false);
+                //DownLeft
+                generateMoves(board, myPosition, myPosition, returnList, -1, -1, false);
+                //Left
+                generateMoves(board, myPosition, myPosition, returnList, 0, -1, false);
+                //UpLeft
+                generateMoves(board, myPosition, myPosition, returnList, 1, -1, false);
+                return returnList;
             case KNIGHT:
-                return List.of();
+                //The generateMoves function was designed for recursive pieces. The knight and King suffer for this.
+                //Also, I'm not going to add comments for horse moves. They are all an L.
+                generateMoves(board, myPosition, myPosition, returnList, 2, 1, false);
+                generateMoves(board, myPosition, myPosition, returnList, 1, 2, false);
+                generateMoves(board, myPosition, myPosition, returnList, -1, 2, false);
+                generateMoves(board, myPosition, myPosition, returnList, -2, 1, false);
+                generateMoves(board, myPosition, myPosition, returnList, -2, -1, false);
+                generateMoves(board, myPosition, myPosition, returnList, -1, -2, false);
+                generateMoves(board, myPosition, myPosition, returnList, 1, -2, false);
+                generateMoves(board, myPosition, myPosition, returnList, 2, -1, false);
+                return returnList;
+            case PAWN:
+                //Pawn is the most complex piece, and basically requires entirely custom code.
+                return returnList;
             case QUEEN:
-                return List.of();
+                //Up
+                generateMoves(board, myPosition, myPosition, returnList, 1, 0, true);
+                //UpRight
+                generateMoves(board, myPosition, myPosition, returnList, 1, 1, true);
+                //Right
+                generateMoves(board, myPosition, myPosition, returnList, 0, 1, true);
+                //RightDown
+                generateMoves(board, myPosition, myPosition, returnList, -1, 1, true);
+                //Down
+                generateMoves(board, myPosition, myPosition, returnList, -1, 0, true);
+                //DownLeft
+                generateMoves(board, myPosition, myPosition, returnList, -1, -1, true);
+                //Left
+                generateMoves(board, myPosition, myPosition, returnList, 0, -1, true);
+                //UpLeft
+                generateMoves(board, myPosition, myPosition, returnList, 1, -1, true);
+                return returnList;
+            case ROOK:
+                //Up
+                generateMoves(board, myPosition, myPosition, returnList, 1, 0, true);
+                //Right
+                generateMoves(board, myPosition, myPosition, returnList, 0, 1, true);
+                //Down
+                generateMoves(board, myPosition, myPosition, returnList, -1, 0, true);
+                //Left
+                generateMoves(board, myPosition, myPosition, returnList, 0, -1, true);
+                return returnList;
         }
         return List.of();
     }
