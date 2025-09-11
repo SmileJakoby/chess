@@ -68,7 +68,6 @@ public class ChessPiece {
                 }
             }
         }
-        return;
     }
     /**
      * Calculates all the positions a chess piece can move to
