@@ -53,6 +53,18 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
+    private Collection<ChessMove> generateMoves(ChessBoard board, ChessPosition startingPos, ChessPosition currentPos, HashSet<ChessMove> givenSet, int rowAdd, int colAdd, boolean recursive){
+        int row = currentPos.getRow() + rowAdd;
+        int col = currentPos.getColumn() + colAdd;
+        ChessPosition nextPos = new ChessPosition(row,col);
+        if (board.getPiece(nextPos) == null){
+            givenSet.add(new ChessMove(startingPos, nextPos, null));
+            if (recursive) {
+                generateMoves(board, startingPos, nextPos, givenSet, rowAdd, colAdd, recursive);
+            }
+        }
+        return givenSet;
+    }
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
         HashSet<ChessMove> returnList = new HashSet<>();
