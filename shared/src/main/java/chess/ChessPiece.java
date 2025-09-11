@@ -90,7 +90,6 @@ public class ChessPiece {
                     col += 1;
                     returnList.add(new ChessMove(new ChessPosition(myPosition.getRow(), myPosition.getColumn()), new ChessPosition(row,col), null));
                 }
-                System.out.println("Got here");
                 return returnList;
             case KNIGHT:
                 return List.of();
