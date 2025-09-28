@@ -75,6 +75,9 @@ public class ChessGame {
         if (mainBoard.getPiece(move.getStartPosition()) == null) {
             throw new InvalidMoveException("That's not even a piece, buddy.");
         }
+        if (mainBoard.getPiece(move.getStartPosition()).getTeamColor() != currentTeam) {
+            throw new InvalidMoveException("It's not even your turn, buddy.");
+        }
         HashSet<ChessMove> returnList = new HashSet<>();
         ChessPiece myPiece = mainBoard.getPiece(move.getStartPosition());
         HashSet<ChessMove> myPiecesMoves = (HashSet<ChessMove>) myPiece.pieceMoves(mainBoard, move.getStartPosition());
