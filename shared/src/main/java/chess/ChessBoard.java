@@ -73,6 +73,7 @@ public class ChessBoard {
         addPiece(new ChessPosition(8,4), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
         addPiece(new ChessPosition(8,5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
     }
+
     public boolean CheckForCheck(ChessGame.TeamColor teamColor) {
         ChessPosition kingPosition = null;
         for (int i = 1; i <= 8; i++ )
@@ -102,14 +103,32 @@ public class ChessBoard {
         }
         return false;
     }
+    public void MakeMove(ChessMove move)
+    {
+        ChessPiece.PieceType movePieceType = this.getPiece(move.getStartPosition()).getPieceType();
+        ChessGame.TeamColor movePieceColor = this.getPiece(move.getStartPosition()).getTeamColor();
+        ChessPiece movePiece = new ChessPiece(movePieceColor, movePieceType);
+        this.addPiece(move.getEndPosition(), null);
+        this.addPiece(move.getStartPosition(), null);
+        this.addPiece(move.getEndPosition(), movePiece);
+    }
+
     public boolean CheckForCheckMate(ChessGame.TeamColor teamColor) {
         boolean inCheckmate = true;
         HashSet<ChessMove> allPossibleMoves = (HashSet<ChessMove>) getAllMoves();
         for (ChessMove move : allPossibleMoves){
-
+            if (this.getPiece(move.getStartPosition()).getTeamColor() == teamColor) {
+                ChessBoard nextGameState = this.clone();
+                nextGameState.MakeMove(move);
+                if (!nextGameState.CheckForCheck(teamColor)) {
+                    inCheckmate = false;
+                }
+            }
         }
         return inCheckmate;
     }
+
+
 
     public Collection<ChessMove> getAllMoves() {
         HashSet<ChessMove> returnList = new HashSet<>();
@@ -139,5 +158,17 @@ public class ChessBoard {
     @Override
     public int hashCode() {
         return Arrays.deepHashCode(squares);
+    }
+    @Override
+    public ChessBoard clone() {
+        ChessBoard returnBoard = new ChessBoard();
+        for (int i = 1; i <= 8; i++){
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition positionToSet = new ChessPosition(i,j);
+                ChessPiece pieceToPlace = this.getPiece(positionToSet);
+                returnBoard.addPiece(positionToSet, pieceToPlace);
+            }
+        }
+        return returnBoard;
     }
 }
