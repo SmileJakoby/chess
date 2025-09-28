@@ -85,19 +85,14 @@ public class ChessBoard {
                     if (this.getPiece(searchPosition).getPieceType() == ChessPiece.PieceType.KING) {
                         if (this.getPiece(searchPosition).getTeamColor() == teamColor) {
                             kingPosition = searchPosition;
-                            //System.out.println("King found at " + searchPosition);
                         }
                     }
                 }
             }
         }
-        //System.out.println("King set to " + kingPosition);
         HashSet<ChessMove> allMoves = (HashSet<ChessMove>) getAllMoves();
-        //System.out.println("All moves found: " + allMoves);
         for (ChessMove move : allMoves){
-            //System.out.println("Checking: " + move.getEndPosition());
             if (move.getEndPosition().equals(kingPosition)){
-                //System.out.println("Check passed!\n");
                 return true;
             }
         }
@@ -148,10 +143,8 @@ public class ChessBoard {
         ChessBoard testBoard = this.clone();
         testBoard.MakeMove(move);
         if (testBoard.CheckForCheck(teamColor)) {
-            //System.out.println("Move is not valid, because " + teamColor + "is in check");
             return false;
         }
-        //System.out.println("Move is valid, because " + teamColor + " is not in check");
         return true;
     }
 
