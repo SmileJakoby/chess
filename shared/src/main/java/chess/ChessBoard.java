@@ -17,6 +17,15 @@ public class ChessBoard {
     public ChessBoard() {
 
     }
+    public ChessBoard(ChessBoard copyBoard){
+        for (int i = 1; i <= 8; i++){
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition positionToSet = new ChessPosition(i,j);
+                ChessPiece pieceToPlace = copyBoard.getPiece(positionToSet);
+                this.addPiece(positionToSet, pieceToPlace);
+            }
+        }
+    }
 
     /**
      * Adds a chess piece to the chessboard
@@ -105,7 +114,7 @@ public class ChessBoard {
         HashSet<ChessMove> allPossibleMoves = (HashSet<ChessMove>) getAllMoves();
         for (ChessMove move : allPossibleMoves){
             if (this.getPiece(move.getStartPosition()).getTeamColor() == teamColor) {
-                ChessBoard nextGameState = this.clone();
+                ChessBoard nextGameState = new ChessBoard(this);
                 nextGameState.MakeMove(move);
                 if (!nextGameState.CheckForCheck(teamColor)) {
                     inCheckmate = false;
@@ -140,7 +149,7 @@ public class ChessBoard {
 
     public boolean moveIsValid(ChessMove move, ChessGame.TeamColor teamColor)
     {
-        ChessBoard testBoard = this.clone();
+        ChessBoard testBoard = new ChessBoard(this);
         testBoard.MakeMove(move);
         return !testBoard.CheckForCheck(teamColor);
     }
@@ -174,17 +183,16 @@ public class ChessBoard {
     public int hashCode() {
         return Arrays.deepHashCode(squares);
     }
-    @Override
-    public ChessBoard clone() {
-        ChessBoard superResult = (ChessBoard) super.clone();
-        ChessBoard returnBoard = new ChessBoard();
-        for (int i = 1; i <= 8; i++){
-            for (int j = 1; j <= 8; j++) {
-                ChessPosition positionToSet = new ChessPosition(i,j);
-                ChessPiece pieceToPlace = this.getPiece(positionToSet);
-                returnBoard.addPiece(positionToSet, pieceToPlace);
-            }
-        }
-        return returnBoard;
-    }
+//    @Override
+//    public ChessBoard clone(){
+//        ChessBoard returnBoard = new ChessBoard();
+//        for (int i = 1; i <= 8; i++){
+//            for (int j = 1; j <= 8; j++) {
+//                ChessPosition positionToSet = new ChessPosition(i,j);
+//                ChessPiece pieceToPlace = this.getPiece(positionToSet);
+//                returnBoard.addPiece(positionToSet, pieceToPlace);
+//            }
+//        }
+//        return returnBoard;
+//    }
 }
