@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -70,6 +72,59 @@ public class ChessBoard {
         addPiece(new ChessPosition(1,5), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
         addPiece(new ChessPosition(8,4), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
         addPiece(new ChessPosition(8,5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
+    }
+    public boolean CheckForCheck(ChessGame.TeamColor teamColor) {
+        ChessPosition kingPosition = null;
+        for (int i = 1; i <= 8; i++ )
+        {
+            for (int j = 1; j <= 8; j++)
+            {
+                ChessPosition searchPosition = new ChessPosition(i, j);
+                if (this.getPiece(searchPosition) != null) {
+                    if (this.getPiece(searchPosition).getPieceType() == ChessPiece.PieceType.KING) {
+                        if (this.getPiece(searchPosition).getTeamColor() == teamColor) {
+                            kingPosition = searchPosition;
+                            //System.out.println("King found at " + searchPosition);
+                        }
+                    }
+                }
+            }
+        }
+        //System.out.println("King set to " + kingPosition);
+        HashSet<ChessMove> allMoves = (HashSet<ChessMove>) getAllMoves();
+        //System.out.println("All moves found: " + allMoves);
+        for (ChessMove move : allMoves){
+            //System.out.println("Checking: " + move.getEndPosition());
+            if (move.getEndPosition().equals(kingPosition)){
+                //System.out.println("Check passed!\n");
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean CheckForCheckMate(ChessGame.TeamColor teamColor) {
+        boolean inCheckmate = true;
+        HashSet<ChessMove> allPossibleMoves = (HashSet<ChessMove>) getAllMoves();
+        for (ChessMove move : allPossibleMoves){
+
+        }
+        return inCheckmate;
+    }
+
+    public Collection<ChessMove> getAllMoves() {
+        HashSet<ChessMove> returnList = new HashSet<>();
+        for (int i = 1; i <= 8; i++ )
+        {
+            for (int j = 1; j <= 8; j++)
+            {
+                ChessPosition searchPosition = new ChessPosition(i, j);
+                if (this.getPiece(searchPosition) != null) {
+                    HashSet<ChessMove> currentPieceList = (HashSet<ChessMove>) this.getPiece(searchPosition).pieceMoves(this, searchPosition);
+                    returnList.addAll(currentPieceList);
+                }
+            }
+        }
+        return returnList;
     }
 
     @Override
