@@ -126,7 +126,7 @@ public class ChessBoard {
     {
         ChessPiece.PieceType movePieceType = this.getPiece(move.getStartPosition()).getPieceType();
         ChessGame.TeamColor movePieceColor = this.getPiece(move.getStartPosition()).getTeamColor();
-        ChessPiece movePiece = null;
+        ChessPiece movePiece;
         if (move.getPromotionPiece() == null) {
             movePiece = new ChessPiece(movePieceColor, movePieceType);
         }
@@ -142,10 +142,7 @@ public class ChessBoard {
     {
         ChessBoard testBoard = this.clone();
         testBoard.MakeMove(move);
-        if (testBoard.CheckForCheck(teamColor)) {
-            return false;
-        }
-        return true;
+        return !testBoard.CheckForCheck(teamColor);
     }
 
     public Collection<ChessMove> getAllMoves() {
@@ -179,6 +176,7 @@ public class ChessBoard {
     }
     @Override
     public ChessBoard clone() {
+        ChessBoard superResult = (ChessBoard) super.clone();
         ChessBoard returnBoard = new ChessBoard();
         for (int i = 1; i <= 8; i++){
             for (int j = 1; j <= 8; j++) {
