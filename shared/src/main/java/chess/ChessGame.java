@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -71,7 +72,32 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        if (mainBoard.getPiece(move.getStartPosition()) == null) {
+            throw new InvalidMoveException("That's not even a piece, buddy.");
+        }
+        HashSet<ChessMove> returnList = new HashSet<>();
+        ChessPiece myPiece = mainBoard.getPiece(move.getStartPosition());
+        HashSet<ChessMove> myPiecesMoves = (HashSet<ChessMove>) myPiece.pieceMoves(mainBoard, move.getStartPosition());
+        for (ChessMove move2 : myPiecesMoves){
+            if (mainBoard.moveIsValid(move2,mainBoard.getPiece(move2.getStartPosition()).getTeamColor())){
+                returnList.add(move2);
+                //System.out.println("Added " + move);
+            }
+        }
+        for (ChessMove move3: returnList){
+            if (move3.equals(move))
+            {
+                mainBoard.MakeMove(move);
+                if (currentTeam == TeamColor.WHITE){
+                    currentTeam = TeamColor.BLACK;
+                }
+                else{
+                    currentTeam = TeamColor.WHITE;
+                }
+                return;
+            }
+        }
+        throw new InvalidMoveException("Not legal");
     }
 
     /**
@@ -120,6 +146,20 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return mainBoard;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return currentTeam == chessGame.currentTeam && Objects.equals(mainBoard, chessGame.mainBoard);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currentTeam, mainBoard);
     }
 }
