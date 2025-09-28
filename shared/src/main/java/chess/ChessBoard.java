@@ -103,15 +103,7 @@ public class ChessBoard {
         }
         return false;
     }
-    public void MakeMove(ChessMove move)
-    {
-        ChessPiece.PieceType movePieceType = this.getPiece(move.getStartPosition()).getPieceType();
-        ChessGame.TeamColor movePieceColor = this.getPiece(move.getStartPosition()).getTeamColor();
-        ChessPiece movePiece = new ChessPiece(movePieceColor, movePieceType);
-        this.addPiece(move.getEndPosition(), null);
-        this.addPiece(move.getStartPosition(), null);
-        this.addPiece(move.getEndPosition(), movePiece);
-    }
+
 
     public boolean CheckForCheckMate(ChessGame.TeamColor teamColor) {
         boolean inCheckmate = true;
@@ -128,7 +120,39 @@ public class ChessBoard {
         return inCheckmate;
     }
 
+    public boolean CheckForStalemate(ChessGame.TeamColor teamColor) {
+        boolean inStalemate = true;
+        if (CheckForCheck(teamColor)) {
+            return false;
+        }
+        return inStalemate;
+    }
 
+    public void MakeMove(ChessMove move)
+    {
+        ChessPiece.PieceType movePieceType = this.getPiece(move.getStartPosition()).getPieceType();
+        ChessGame.TeamColor movePieceColor = this.getPiece(move.getStartPosition()).getTeamColor();
+        ChessPiece movePiece = null;
+        if (move.getPromotionPiece() == null) {
+            movePiece = new ChessPiece(movePieceColor, movePieceType);
+        }
+        else{
+            movePiece = new ChessPiece(movePieceColor, move.getPromotionPiece());
+        }
+        this.addPiece(move.getEndPosition(), null);
+        this.addPiece(move.getStartPosition(), null);
+        this.addPiece(move.getEndPosition(), movePiece);
+    }
+
+    public boolean moveIsValid(ChessMove move, ChessGame.TeamColor teamColor)
+    {
+        ChessBoard testBoard = this.clone();
+        testBoard.MakeMove(move);
+        if (testBoard.CheckForCheck(teamColor)) {
+            return false;
+        }
+        return true;
+    }
 
     public Collection<ChessMove> getAllMoves() {
         HashSet<ChessMove> returnList = new HashSet<>();
