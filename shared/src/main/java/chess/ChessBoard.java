@@ -121,11 +121,10 @@ public class ChessBoard {
     }
 
     public boolean CheckForStalemate(ChessGame.TeamColor teamColor) {
-        boolean inStalemate = true;
         if (CheckForCheck(teamColor)) {
             return false;
         }
-        return inStalemate;
+        return CheckForCheckMate(teamColor);
     }
 
     public void MakeMove(ChessMove move)
@@ -149,8 +148,10 @@ public class ChessBoard {
         ChessBoard testBoard = this.clone();
         testBoard.MakeMove(move);
         if (testBoard.CheckForCheck(teamColor)) {
+            //System.out.println("Move is not valid, because " + teamColor + "is in check");
             return false;
         }
+        //System.out.println("Move is valid, because " + teamColor + " is not in check");
         return true;
     }
 

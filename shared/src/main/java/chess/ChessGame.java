@@ -51,7 +51,17 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        //System.out.println("Valid Moves called");
+        HashSet<ChessMove> returnList = new HashSet<>();
+        ChessPiece myPiece = mainBoard.getPiece(startPosition);
+        HashSet<ChessMove> myPiecesMoves = (HashSet<ChessMove>) myPiece.pieceMoves(mainBoard, startPosition);
+        for (ChessMove move : myPiecesMoves){
+            if (mainBoard.moveIsValid(move,mainBoard.getPiece(move.getStartPosition()).getTeamColor())){
+                returnList.add(move);
+                //System.out.println("Added " + move);
+            }
+        }
+        return returnList;
     }
 
     /**
@@ -92,7 +102,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return mainBoard.CheckForCheckMate(teamColor);
+        return mainBoard.CheckForStalemate(teamColor);
     }
 
     /**
