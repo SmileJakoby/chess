@@ -2,11 +2,9 @@ package service;
 
 import dataaccess.DataAccess;
 import datamodel.LoginResponse;
-import datamodel.RegisterResponse;
 import model.AuthData;
 import model.UserData;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class SessionService {
@@ -16,13 +14,18 @@ public class SessionService {
     }
 
     public LoginResponse login(UserData user) throws BadRequestException, UnauthorizedException {
-        var existingUser = dataAccess.getUser(user.username());
 
-        if (dataAccess.getUser(user.username()) == null) {
+        if (user.password() == null || user.username() == null) {
             throw new BadRequestException("bad request");
         }
-        if (!Objects.equals(dataAccess.getUser(user.username()).password(), user.password())) {
+        if (dataAccess.getUser(user.username()) == null) {
             throw new UnauthorizedException("unauthorized");
+        }
+        else
+        {
+            if (!dataAccess.getUser(user.username()).password().equals(user.password())) {
+                throw new UnauthorizedException("unauthorized");
+            }
         }
         String authToken = GenerateAuthToken();
         AuthData newAuthData = new AuthData(authToken, user.username());
