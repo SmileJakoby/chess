@@ -13,14 +13,16 @@ public class Server {
     private final Javalin server;
     private final UserService userService;
     private final SessionService sessionService;
+    private final DatabaseService databaseService;
     public Server() {
         var dataAccess = new MemoryDataAccess();
         userService = new UserService(dataAccess);
         sessionService = new SessionService(dataAccess);
+        databaseService = new DatabaseService(dataAccess);
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
 
-        server.delete("db", ctx -> ctx.result("{}"));
+        server.delete("db", ctx -> clear(ctx));
         //Needs to return username+authToken
         //server.post("user", ctx->ctx.result("{\"username\":\" \", \"authToken\":\" \"}"));
         server.post("user", ctx->register(ctx));
@@ -38,6 +40,10 @@ public class Server {
         server.stop();
     }
 
+    private void clear(Context ctx){
+        databaseService.clear();
+        ctx.result("{}");
+    }
     private void register(Context ctx){
         try {
             var serializer = new Gson();
