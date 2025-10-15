@@ -1,20 +1,24 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.MemoryDataAccess;
+import model.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
-
-import java.util.Map;
+import service.UserService;
 
 public class Server {
 
     private final Javalin server;
+    private final UserService userService;
 
     public Server() {
+        var dataAccess = new MemoryDataAccess();
+        userService = new UserService(dataAccess);
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
-        server.delete("db", ctx -> ctx.result("{}"));
 
+        server.delete("db", ctx -> ctx.result("{}"));
         //Needs to return username+authToken
         //server.post("user", ctx->ctx.result("{\"username\":\" \", \"authToken\":\" \"}"));
         server.post("user", ctx->register(ctx));
@@ -32,10 +36,18 @@ public class Server {
     }
 
     private void register(Context ctx){
-        var serializer = new Gson();
-        var requestBody = serializer.fromJson(ctx.body(), Map.class);
-        //TODO: Call service to register the user
-        var response = Map.of("username", requestBody.get("username"), "authToken", "xyz");
-        ctx.result(serializer.toJson(response));
+        try {
+            var serializer = new Gson();
+            String reqJson = ctx.body();
+            var user = serializer.fromJson(reqJson, UserData.class);
+
+            var registrationResponse = userService.register(user);
+
+            ctx.result(serializer.toJson(registrationResponse));
+        }
+        catch(Exception ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(403).result(errorMsg);
+        }
     }
 }
