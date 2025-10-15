@@ -5,6 +5,7 @@ import dataaccess.MemoryDataAccess;
 import model.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import service.AlreadyTakenException;
 import service.UserService;
 
 public class Server {
@@ -44,6 +45,10 @@ public class Server {
             var registrationResponse = userService.register(user);
 
             ctx.result(serializer.toJson(registrationResponse));
+        }
+        catch(AlreadyTakenException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(403).result(errorMsg);
         }
         catch(Exception ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());

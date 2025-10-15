@@ -1,4 +1,4 @@
-package datamodel;
+package service;
 
 /**
  * Indicates the username is already taken

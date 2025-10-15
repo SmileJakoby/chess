@@ -11,11 +11,11 @@ public class UserService {
     public UserService(DataAccess dataAccess){
         this.dataAccess = dataAccess;
     }
-    public RegisterResponse register(UserData user) throws Exception {
+    public RegisterResponse register(UserData user) throws Exception, AlreadyTakenException {
         var existingUser = dataAccess.getUser(user.username());
         if (existingUser != null) {
             //TODO: Make this a ServiceException
-            throw new Exception("Error: Already exists");
+            throw new AlreadyTakenException("Error: Already exists");
         }
         if (user.password() == null) {
             throw new Exception("Error: Password is null");
