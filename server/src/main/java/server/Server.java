@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.MemoryDataAccess;
 import model.UserData;
+import model.AuthData;
 import io.javalin.*;
 import io.javalin.http.Context;
 import service.*;
@@ -25,6 +26,7 @@ public class Server {
         server.post("user", ctx->register(ctx));
         // Register your endpoints and exception handlers here.
         server.post("session", ctx->login(ctx));
+        server.delete("session", ctx->logout(ctx));
     }
 
     public int run(int desiredPort) {
@@ -68,6 +70,19 @@ public class Server {
         catch(BadRequestException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(400).result(errorMsg);
+        }
+        catch(UnauthorizedException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(401).result(errorMsg);
+        }
+    }
+    private void logout(Context ctx){
+        try {
+            String reqJson = ctx.header("authorization");
+            var givenAuth = new AuthData(reqJson, null);
+            sessionService.logout(givenAuth);
+
+            ctx.result("{}");
         }
         catch(UnauthorizedException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());

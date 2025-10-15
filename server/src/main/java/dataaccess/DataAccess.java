@@ -9,4 +9,5 @@ public interface DataAccess {
     void clear();
     void addAuthData(AuthData authData);
     AuthData getAuthData(String authToken);
+    void removeAuthData(String authToken);
 }

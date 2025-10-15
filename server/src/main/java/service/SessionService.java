@@ -32,6 +32,15 @@ public class SessionService {
         dataAccess.addAuthData(newAuthData);
         return new LoginResponse(user.username(), authToken);
     }
+    public void logout(AuthData givenAuth) throws UnauthorizedException {
+        if (dataAccess.getAuthData(givenAuth.authToken()) == null)
+        {
+            throw new UnauthorizedException("unauthorized");
+        }
+        else {
+            dataAccess.removeAuthData(givenAuth.authToken());
+        }
+    }
     private String GenerateAuthToken()
     {
         return UUID.randomUUID().toString();

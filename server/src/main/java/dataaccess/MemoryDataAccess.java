@@ -33,4 +33,9 @@ public class MemoryDataAccess implements DataAccess {
     public AuthData getAuthData(String authToken) {
         return authMap.get(authToken);
     }
+
+    @Override
+    public void removeAuthData(String authToken) {
+        authMap.remove(authToken);
+    }
 }
