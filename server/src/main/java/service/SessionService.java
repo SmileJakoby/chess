@@ -1,31 +1,34 @@
 package service;
 
 import dataaccess.DataAccess;
+import datamodel.LoginResponse;
 import datamodel.RegisterResponse;
 import model.AuthData;
 import model.UserData;
+
+import java.util.Objects;
 import java.util.UUID;
 
-public class UserService {
+public class SessionService {
     private final DataAccess dataAccess;
-    public UserService(DataAccess dataAccess){
+    public SessionService(DataAccess dataAccess){
         this.dataAccess = dataAccess;
     }
-    public RegisterResponse register(UserData user) throws BadRequestException, AlreadyTakenException {
+
+    public LoginResponse login(UserData user) throws BadRequestException, UnauthorizedException {
         var existingUser = dataAccess.getUser(user.username());
-        if (existingUser != null) {
-            throw new AlreadyTakenException("already taken");
-        }
-        if (user.password() == null || user.username() == null || user.email() == null) {
+
+        if (dataAccess.getUser(user.username()) == null) {
             throw new BadRequestException("bad request");
         }
-        dataAccess.addUser(user);
+        if (!Objects.equals(dataAccess.getUser(user.username()).password(), user.password())) {
+            throw new UnauthorizedException("unauthorized");
+        }
         String authToken = GenerateAuthToken();
         AuthData newAuthData = new AuthData(authToken, user.username());
         dataAccess.addAuthData(newAuthData);
-        return new RegisterResponse(user.username(), authToken);
+        return new LoginResponse(user.username(), authToken);
     }
-
     private String GenerateAuthToken()
     {
         return UUID.randomUUID().toString();

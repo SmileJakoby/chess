@@ -5,17 +5,17 @@ import dataaccess.MemoryDataAccess;
 import model.UserData;
 import io.javalin.*;
 import io.javalin.http.Context;
-import service.AlreadyTakenException;
-import service.UserService;
+import service.*;
 
 public class Server {
 
     private final Javalin server;
     private final UserService userService;
-
+    private final SessionService sessionService;
     public Server() {
         var dataAccess = new MemoryDataAccess();
         userService = new UserService(dataAccess);
+        sessionService = new SessionService(dataAccess);
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
 
@@ -24,7 +24,7 @@ public class Server {
         //server.post("user", ctx->ctx.result("{\"username\":\" \", \"authToken\":\" \"}"));
         server.post("user", ctx->register(ctx));
         // Register your endpoints and exception handlers here.
-
+        server.post("session", ctx->login(ctx));
     }
 
     public int run(int desiredPort) {
@@ -46,13 +46,32 @@ public class Server {
 
             ctx.result(serializer.toJson(registrationResponse));
         }
+        catch(BadRequestException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(400).result(errorMsg);
+        }
         catch(AlreadyTakenException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(403).result(errorMsg);
         }
-        catch(Exception ex){
+    }
+    private void login(Context ctx){
+        try {
+            var serializer = new Gson();
+            String reqJson = ctx.body();
+            var user = serializer.fromJson(reqJson, UserData.class);
+
+            var loginResponse = sessionService.login(user);
+
+            ctx.result(serializer.toJson(loginResponse));
+        }
+        catch(BadRequestException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
-            ctx.status(403).result(errorMsg);
+            ctx.status(400).result(errorMsg);
+        }
+        catch(UnauthorizedException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(401).result(errorMsg);
         }
     }
 }
