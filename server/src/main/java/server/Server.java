@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.MemoryDataAccess;
+import datamodel.JoinGameRequest;
 import model.GameData;
 import model.UserData;
 import model.AuthData;
@@ -34,6 +35,7 @@ public class Server {
         server.delete("session", ctx->logout(ctx));
         server.get("game", ctx->listGames(ctx));
         server.post("game",ctx->createGame(ctx));
+        server.put("game",ctx->joinGame(ctx));
     }
 
     public int run(int desiredPort) {
@@ -138,4 +140,30 @@ public class Server {
         }
     }
 
+    private void joinGame(Context ctx){
+        try {
+            var serializer = new Gson();
+            String reqJson = ctx.header("authorization");
+            var givenAuth = new AuthData(reqJson, null);
+
+            String reqJsonBody = ctx.body();
+            var joinRequest = serializer.fromJson(reqJsonBody, JoinGameRequest.class);
+
+            gameService.joinGame(givenAuth, joinRequest.playerColor(), joinRequest.gameID());
+
+            ctx.result("{}");
+        }
+        catch(UnauthorizedException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(401).result(errorMsg);
+        }
+        catch(BadRequestException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(400).result(errorMsg);
+        }
+        catch(AlreadyTakenException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(403).result(errorMsg);
+        }
+    }
 }

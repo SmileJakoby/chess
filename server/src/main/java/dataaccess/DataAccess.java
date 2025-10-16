@@ -15,7 +15,7 @@ public interface DataAccess {
     GameData[] getGameDataList();
     void addGame(GameData gameData);
     GameData getGame(Integer gameID);
-    void addPlayer(Integer gameID, String username, String playerColor) throws DataAccessException;
+    void addPlayer(Integer gameID, String username, String playerColor);
     GameData getGameByName(String gameName);
     Integer getGameCount();
 }

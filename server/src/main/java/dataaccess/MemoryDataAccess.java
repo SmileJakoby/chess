@@ -11,7 +11,7 @@ public class MemoryDataAccess implements DataAccess {
     private final HashMap<String, UserData> usersMap = new HashMap<>();
     private final HashMap<String, AuthData> authMap = new HashMap<>();
     private final HashMap<Integer, GameData> gameMap = new HashMap<>();
-
+    public int addGameCount = 0;
     @Override
     public void clear(){
         usersMap.clear();
@@ -46,8 +46,10 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public GameData[] getGameDataList(){
         GameData[] returnList = new GameData[gameMap.size()];
-        for (int i = 0; i < gameMap.size(); i++) {
-            returnList[i] = gameMap.get(i);
+        int i = 0;
+        for (HashMap.Entry<Integer, GameData> entry : gameMap.entrySet()){
+            returnList[i] = entry.getValue();
+            i++;
         }
         return returnList;
     }
@@ -60,6 +62,7 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public void addGame(GameData gameData){
         gameMap.put(gameData.gameID(), gameData);
+        System.out.println("add Game called");
     }
 
     @Override
@@ -69,34 +72,30 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public GameData getGameByName(String gameName) {
-        for (int i = 0; i < gameMap.size(); i++) {
-            if (gameMap.get(i).gameName().equals(gameName)) {
-                return gameMap.get(i);
+
+        for (HashMap.Entry<Integer, GameData> entry : gameMap.entrySet()){
+            if (entry.getValue().gameName().equals(gameName)) {
+                return entry.getValue();
             }
         }
         return null;
     }
 
     @Override
-    public void addPlayer(Integer gameID, String username, String playerColor) throws DataAccessException{
-        if (gameMap.get(gameID) != null) {
-            if (playerColor.equals("black"))
-            {
-                GameData oldGameData = gameMap.get(gameID);
-                GameData newGameData = new GameData(oldGameData.gameID(), oldGameData.whiteUsername(), username, oldGameData.gameName(), oldGameData.game());
-                gameMap.remove(gameID);
-                gameMap.put(gameID, newGameData);
-            }
-            if (playerColor.equals("white"))
-            {
-                GameData oldGameData = gameMap.get(gameID);
-                GameData newGameData = new GameData(oldGameData.gameID(), username, oldGameData.blackUsername(), oldGameData.gameName(), oldGameData.game());
-                gameMap.remove(gameID);
-                gameMap.put(gameID, newGameData);
-            }
+    public void addPlayer(Integer gameID, String username, String playerColor){
+        if (playerColor.equals("BLACK"))
+        {
+            GameData oldGameData = gameMap.get(gameID);
+            GameData newGameData = new GameData(oldGameData.gameID(), oldGameData.whiteUsername(), username, oldGameData.gameName(), oldGameData.game());
+            gameMap.remove(gameID);
+            gameMap.put(gameID, newGameData);
         }
-        else {
-            throw new DataAccessException("bad request");
+        if (playerColor.equals("WHITE"))
+        {
+            GameData oldGameData = gameMap.get(gameID);
+            GameData newGameData = new GameData(oldGameData.gameID(), username, oldGameData.blackUsername(), oldGameData.gameName(), oldGameData.game());
+            gameMap.remove(gameID);
+            gameMap.put(gameID, newGameData);
         }
     }
 }
