@@ -13,11 +13,13 @@ public class Server {
     private final Javalin server;
     private final UserService userService;
     private final SessionService sessionService;
+    private final GameService gameService;
     private final DatabaseService databaseService;
     public Server() {
         var dataAccess = new MemoryDataAccess();
         userService = new UserService(dataAccess);
         sessionService = new SessionService(dataAccess);
+        gameService = new GameService(dataAccess);
         databaseService = new DatabaseService(dataAccess);
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -29,6 +31,7 @@ public class Server {
         // Register your endpoints and exception handlers here.
         server.post("session", ctx->login(ctx));
         server.delete("session", ctx->logout(ctx));
+        server.get("game", ctx->listGames(ctx));
     }
 
     public int run(int desiredPort) {
@@ -89,6 +92,20 @@ public class Server {
             sessionService.logout(givenAuth);
 
             ctx.result("{}");
+        }
+        catch(UnauthorizedException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(401).result(errorMsg);
+        }
+    }
+    private void listGames(Context ctx){
+        try {
+            var serializer = new Gson();
+            String reqJson = ctx.header("authorization");
+            var givenAuth = new AuthData(reqJson, null);
+            var gamesListResponse = gameService.getGamesList(givenAuth);
+
+            ctx.result(serializer.toJson(gamesListResponse));
         }
         catch(UnauthorizedException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
