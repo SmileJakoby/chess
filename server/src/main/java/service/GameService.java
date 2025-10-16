@@ -2,16 +2,16 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.DataAccess;
-import dataaccess.DataAccessException;
+
 import datamodel.CreateGameResponse;
 import datamodel.GameResponse;
 import datamodel.GamesListResponse;
-import datamodel.RegisterResponse;
+
 import model.AuthData;
 import model.GameData;
-import model.UserData;
 
-import java.util.UUID;
+
+
 
 public class GameService {
     private final DataAccess dataAccess;
@@ -60,6 +60,10 @@ public class GameService {
         if (dataAccess.getGame(gameID) == null || playerColor == null || gameID == null)
         {
             throw new BadRequestException("bad request");
+        }
+        if (!(playerColor.equals("WHITE") || playerColor.equals("BLACK")))
+        {
+            throw new  BadRequestException("bad request");
         }
         if (playerColor.equals("WHITE"))
         {

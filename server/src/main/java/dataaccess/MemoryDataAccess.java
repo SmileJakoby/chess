@@ -3,7 +3,7 @@ package dataaccess;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import service.BadRequestException;
+
 
 import java.util.HashMap;
 
@@ -11,11 +11,11 @@ public class MemoryDataAccess implements DataAccess {
     private final HashMap<String, UserData> usersMap = new HashMap<>();
     private final HashMap<String, AuthData> authMap = new HashMap<>();
     private final HashMap<Integer, GameData> gameMap = new HashMap<>();
-    public int addGameCount = 0;
     @Override
     public void clear(){
         usersMap.clear();
         authMap.clear();
+        gameMap.clear();
     }
     @Override
     public void addUser(UserData user) {
@@ -62,7 +62,6 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public void addGame(GameData gameData){
         gameMap.put(gameData.gameID(), gameData);
-        System.out.println("add Game called");
     }
 
     @Override
