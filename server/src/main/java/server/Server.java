@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.MemoryDataAccess;
+import model.GameData;
 import model.UserData;
 import model.AuthData;
 import io.javalin.*;
@@ -32,6 +33,7 @@ public class Server {
         server.post("session", ctx->login(ctx));
         server.delete("session", ctx->logout(ctx));
         server.get("game", ctx->listGames(ctx));
+        server.post("game",ctx->createGame(ctx));
     }
 
     public int run(int desiredPort) {
@@ -112,4 +114,28 @@ public class Server {
             ctx.status(401).result(errorMsg);
         }
     }
+
+    private void createGame(Context ctx){
+        try {
+            var serializer = new Gson();
+            String reqJson = ctx.header("authorization");
+            var givenAuth = new AuthData(reqJson, null);
+
+            String reqJsonBody = ctx.body();
+            var game = serializer.fromJson(reqJsonBody, GameData.class);
+
+            var createGameResponse = gameService.createGame(givenAuth, game.gameName());
+
+            ctx.result(serializer.toJson(createGameResponse));
+        }
+        catch(UnauthorizedException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(401).result(errorMsg);
+        }
+        catch(BadRequestException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(400).result(errorMsg);
+        }
+    }
+
 }

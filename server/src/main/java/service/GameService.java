@@ -1,6 +1,9 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
+import datamodel.CreateGameResponse;
 import datamodel.GameResponse;
 import datamodel.GamesListResponse;
 import datamodel.RegisterResponse;
@@ -28,4 +31,23 @@ public class GameService {
         }
         return new GamesListResponse(returnList);
     }
+
+    public CreateGameResponse createGame(AuthData givenAuth, String gameName) throws UnauthorizedException, BadRequestException{
+        if (dataAccess.getAuthData(givenAuth.authToken()) == null)
+        {
+            throw new UnauthorizedException("unauthorized");
+        }
+        if (dataAccess.getGameByName(gameName) != null || gameName == null)
+        {
+            throw new BadRequestException("bad request");
+        }
+        else {
+            Integer gameID = dataAccess.getGameCount() + 1;
+            ChessGame newGame = new ChessGame();
+            GameData newGameData = new GameData(gameID, null, null, gameName, newGame);
+            dataAccess.addGame(newGameData);
+            return new CreateGameResponse(gameID);
+        }
+    }
+
 }

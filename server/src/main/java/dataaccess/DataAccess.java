@@ -3,6 +3,7 @@ package dataaccess;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import service.BadRequestException;
 
 public interface DataAccess {
     void addUser(UserData user);
@@ -15,4 +16,6 @@ public interface DataAccess {
     void addGame(GameData gameData);
     GameData getGame(Integer gameID);
     void addPlayer(Integer gameID, String username, String playerColor) throws DataAccessException;
+    GameData getGameByName(String gameName);
+    Integer getGameCount();
 }
