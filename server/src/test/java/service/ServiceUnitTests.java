@@ -1,9 +1,13 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
+import datamodel.GameResponse;
+import datamodel.LoginResponse;
 import datamodel.RegisterResponse;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import passoff.model.TestAuthResult;
@@ -18,6 +22,7 @@ public class ServiceUnitTests {
     public static DatabaseService databaseService = new DatabaseService(dataAccess);
     public static UserService userService = new UserService(dataAccess);
     public static SessionService sessionService = new SessionService(dataAccess);
+    public static GameService gameService = new GameService(dataAccess);
     @BeforeEach
     public void setup() {
         dataAccess.clear();
@@ -35,6 +40,10 @@ public class ServiceUnitTests {
         AuthData auth2 = new AuthData("asdf", "Luke");
         dataAccess.addAuthData(auth1);
         dataAccess.addAuthData(auth2);
+        GameData game1 = new GameData(1,"Jacob","Luke","1v1 me bro",new ChessGame());
+        GameData game2 = new GameData(2,"Jacob","Luke","Rematch",new ChessGame());
+        dataAccess.addGame(game1);
+        dataAccess.addGame(game2);
         Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(),
                 "dataAccess failed, couldn't add user");
         Assertions.assertEquals(user2.username(), dataAccess.getUser(user2.username()).username(),
@@ -43,42 +52,97 @@ public class ServiceUnitTests {
                 "dataAccess failed, couldn't add auth");
         Assertions.assertEquals(auth2.authToken(), dataAccess.getAuthData(auth2.authToken()).authToken(),
                 "dataAccess failed, couldn't add auth");
+        Assertions.assertEquals(game1.gameID(), dataAccess.getGame(game1.gameID()).gameID(),
+                "dataAccess failed, couldn't add game");
+        Assertions.assertEquals(game2.gameID(), dataAccess.getGame(game2.gameID()).gameID(),
+                "dataAccess failed, couldn't add game");
         databaseService.clear();
         Assertions.assertNull(dataAccess.getUser(user1.username()));
         Assertions.assertNull(dataAccess.getUser(user2.username()));
         Assertions.assertNull(dataAccess.getAuthData(auth1.authToken()));
         Assertions.assertNull(dataAccess.getAuthData(auth2.authToken()));
+        Assertions.assertNull(dataAccess.getGame(game1.gameID()));
+        Assertions.assertNull(dataAccess.getGame(game2.gameID()));
     }
     @Test
     @Order(2)
     @DisplayName("Register Positive")
-    public void registerPositive() {
+    public void registerPositive() throws Exception {
         UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        try {
-            RegisterResponse response = userService.register(user1);
-            Assertions.assertNotNull(response, "Did not get response");
-            Assertions.assertEquals(user1.username(), response.username(), "response username mismatch");
-            Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(), "database username mismatch");
-        } catch (BadRequestException e) {
-            Assertions.fail("Returned bad request when it shouldn't have");
-        }
-        catch (AlreadyTakenException e) {
-            Assertions.fail("Returned already taken when it shouldn't have");
-        }
+        RegisterResponse response = userService.register(user1);
+        Assertions.assertNotNull(response, "Did not get response");
+        Assertions.assertEquals(user1.username(), response.username(), "response username mismatch");
+        Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(), "database username mismatch");
     }
     @Test
     @Order(3)
     @DisplayName("Register Negative")
     public void registerNegative() {
         UserData user1 = new UserData("Jacob",null,"12345");
-        try {
-            RegisterResponse response = userService.register(user1);
-            Assertions.fail("Expected BadRequestException, got no exception");
-        } catch (BadRequestException e) {
-            return;
-        }
-        catch (AlreadyTakenException e) {
-            Assertions.fail("Expected BadRequestException, got AlreadyTakenException");
-        }
+        Assertions.assertThrows(BadRequestException.class, () -> {userService.register(user1);});
+    }
+
+    @Test
+    @Order(4)
+    @DisplayName("Login Positive")
+    public void loginPositive() throws Exception{
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        dataAccess.addUser(user1);
+        LoginResponse response = sessionService.login(user1);
+        Assertions.assertNotNull(response, "Did not get response");
+        Assertions.assertEquals(user1.username(), response.username(), "response username mismatch");
+        Assertions.assertEquals(response.authToken(), dataAccess.getAuthData(response.authToken()).authToken(), "response authToken mismatch");
+    }
+
+    @Test
+    @Order(5)
+    @DisplayName("Login Negative")
+    public void loginNegative() {
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        dataAccess.addUser(user1);
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+                UserData badLogin = new UserData("Jacob", "jacobskarda@gmail.com", "Totally my password");
+                sessionService.login(badLogin);
+        });
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("Logout Positive")
+    public void logoutPositive() throws Exception{
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        dataAccess.addUser(user1);
+        AuthData auth1 = new AuthData("qwerty", "Jacob");
+        dataAccess.addAuthData(auth1);
+        sessionService.logout(auth1);
+        Assertions.assertNull(dataAccess.getAuthData(auth1.authToken()), "AuthData was not removed from database");
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("Logout Negative")
+    public void logoutNegative() {
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        dataAccess.addUser(user1);
+        AuthData auth1 = new AuthData("qwerty", "Jacob");
+        Assertions.assertThrows(UnauthorizedException.class, () -> {sessionService.logout(auth1);});
+    }
+
+    @Test
+    @Order(13)
+    @DisplayName("Join Positive")
+    public void joinPositive() throws Exception{
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
+        dataAccess.addUser(user1);
+        dataAccess.addUser(user2);
+        AuthData auth1 = new AuthData("qwerty", "Jacob");
+        AuthData auth2 = new AuthData("asdf", "Luke");
+        dataAccess.addAuthData(auth1);
+        dataAccess.addAuthData(auth2);
+        GameData game1 = new GameData(1,"Jacob",null,"1v1 me bro",new ChessGame());
+        dataAccess.addGame(game1);
+        gameService.joinGame(auth1, "BLACK", 1);
+        Assertions.assertEquals(user1.username(), dataAccess.getGame(1).blackUsername(), "black player username mismatch");
     }
 }
