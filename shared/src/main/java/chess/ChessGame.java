@@ -90,7 +90,7 @@ public class ChessGame {
         for (ChessMove move3: returnList){
             if (move3.equals(move))
             {
-                mainBoard.MakeMove(move);
+                mainBoard.makeMove(move);
                 if (currentTeam == TeamColor.WHITE){
                     currentTeam = TeamColor.BLACK;
                 }
@@ -110,7 +110,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return mainBoard.CheckForCheck(teamColor);
+        return mainBoard.checkForCheck(teamColor);
     }
 
     /**
@@ -120,7 +120,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return mainBoard.CheckForCheckMate(teamColor);
+        return mainBoard.checkForCheckMate(teamColor);
     }
 
     /**
@@ -131,7 +131,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return mainBoard.CheckForStalemate(teamColor);
+        return mainBoard.checkForStalemate(teamColor);
     }
 
     /**

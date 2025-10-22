@@ -125,16 +125,16 @@ public class ChessPiece {
             case PAWN:
                 //Pawn is the most complex piece, and basically requires entirely custom code.
 
-                int RowMoveDirection;
+                int rowMoveDirection;
                 if (this.pieceColor == ChessGame.TeamColor.WHITE){
-                    RowMoveDirection = 1;
+                    rowMoveDirection = 1;
                 }
                 else {
-                    RowMoveDirection = -1;
+                    rowMoveDirection = -1;
                 }
 
                 //Check for forward move
-                int nextRow = myPosition.getRow() + RowMoveDirection;
+                int nextRow = myPosition.getRow() + rowMoveDirection;
                 int nextCol = myPosition.getColumn();
                 ChessPosition nextPosition;
                 ChessPiece pieceInWay;
@@ -154,7 +154,7 @@ public class ChessPiece {
                             }
                             //If white, and on second row (haven't moved yet) check for the next spot
                             if (myPosition.getRow() == 2) {
-                                nextPosition = new ChessPosition(myPosition.getRow() + RowMoveDirection + RowMoveDirection, myPosition.getColumn());
+                                nextPosition = new ChessPosition(myPosition.getRow() + rowMoveDirection + rowMoveDirection, myPosition.getColumn());
                                 pieceInWay = board.getPiece(nextPosition);
                                 if (pieceInWay == null) {
                                     returnList.add(new ChessMove(myPosition, nextPosition, null));
@@ -174,7 +174,7 @@ public class ChessPiece {
                             }
                             //If white, and on seventh row (haven't moved yet) check for the next spot
                             if (myPosition.getRow() == 7) {
-                                nextPosition = new ChessPosition(myPosition.getRow() + RowMoveDirection + RowMoveDirection, myPosition.getColumn());
+                                nextPosition = new ChessPosition(myPosition.getRow() + rowMoveDirection + rowMoveDirection, myPosition.getColumn());
                                 pieceInWay = board.getPiece(nextPosition);
                                 if (pieceInWay == null) {
                                     returnList.add(new ChessMove(myPosition, nextPosition, null));
@@ -184,7 +184,7 @@ public class ChessPiece {
                     }
                 }
                 //Check diagonal left
-                nextRow = myPosition.getRow() + RowMoveDirection;
+                nextRow = myPosition.getRow() + rowMoveDirection;
                 nextCol = myPosition.getColumn() - 1;
                 if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
                     nextPosition = new ChessPosition(nextRow, nextCol);
@@ -217,7 +217,7 @@ public class ChessPiece {
                     }
                 }
                 //Check diagonal right
-                nextRow = myPosition.getRow() + RowMoveDirection;
+                nextRow = myPosition.getRow() + rowMoveDirection;
                 nextCol = myPosition.getColumn() + 1;
                 if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
                     nextPosition = new ChessPosition(nextRow, nextCol);

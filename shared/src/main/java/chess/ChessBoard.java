@@ -84,7 +84,7 @@ public class ChessBoard {
         addPiece(new ChessPosition(8,5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
     }
 
-    public boolean CheckForCheck(ChessGame.TeamColor teamColor) {
+    public boolean checkForCheck(ChessGame.TeamColor teamColor) {
         ChessPosition kingPosition = null;
         for (int i = 1; i <= 8; i++ )
         {
@@ -110,14 +110,14 @@ public class ChessBoard {
     }
 
 
-    public boolean CheckForCheckMate(ChessGame.TeamColor teamColor) {
+    public boolean checkForCheckMate(ChessGame.TeamColor teamColor) {
         boolean inCheckmate = true;
         HashSet<ChessMove> allPossibleMoves = (HashSet<ChessMove>) getAllMoves();
         for (ChessMove move : allPossibleMoves){
             if (this.getPiece(move.getStartPosition()).getTeamColor() == teamColor) {
                 ChessBoard nextGameState = new ChessBoard(this);
-                nextGameState.MakeMove(move);
-                if (!nextGameState.CheckForCheck(teamColor)) {
+                nextGameState.makeMove(move);
+                if (!nextGameState.checkForCheck(teamColor)) {
                     inCheckmate = false;
                 }
             }
@@ -125,14 +125,14 @@ public class ChessBoard {
         return inCheckmate;
     }
 
-    public boolean CheckForStalemate(ChessGame.TeamColor teamColor) {
-        if (CheckForCheck(teamColor)) {
+    public boolean checkForStalemate(ChessGame.TeamColor teamColor) {
+        if (checkForCheck(teamColor)) {
             return false;
         }
-        return CheckForCheckMate(teamColor);
+        return checkForCheckMate(teamColor);
     }
 
-    public void MakeMove(ChessMove move)
+    public void makeMove(ChessMove move)
     {
         ChessPiece.PieceType movePieceType = this.getPiece(move.getStartPosition()).getPieceType();
         ChessGame.TeamColor movePieceColor = this.getPiece(move.getStartPosition()).getTeamColor();
@@ -151,8 +151,8 @@ public class ChessBoard {
     public boolean moveIsValid(ChessMove move, ChessGame.TeamColor teamColor)
     {
         ChessBoard testBoard = new ChessBoard(this);
-        testBoard.MakeMove(move);
-        return !testBoard.CheckForCheck(teamColor);
+        testBoard.makeMove(move);
+        return !testBoard.checkForCheck(teamColor);
     }
 
     public Collection<ChessMove> getAllMoves() {

@@ -20,13 +20,13 @@ public class UserService {
             throw new BadRequestException("bad request");
         }
         dataAccess.addUser(user);
-        String authToken = GenerateAuthToken();
+        String authToken = generateAuthToken();
         AuthData newAuthData = new AuthData(authToken, user.username());
         dataAccess.addAuthData(newAuthData);
         return new RegisterResponse(user.username(), authToken);
     }
 
-    private String GenerateAuthToken()
+    private String generateAuthToken()
     {
         return UUID.randomUUID().toString();
     }
