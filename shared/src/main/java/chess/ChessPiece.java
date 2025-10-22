@@ -124,18 +124,16 @@ public class ChessPiece {
                 if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
                     nextPosition = new ChessPosition(nextRow, nextCol);
                     pieceInWay = board.getPiece(nextPosition);
-                    if (pieceInWay == null) {
-                        if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                            pawnMove(myPosition, returnList, nextPosition, 8);
-                            if (myPosition.getRow() == 2) {
-                                calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
-                            }
+                    if (pieceInWay == null && this.pieceColor == ChessGame.TeamColor.WHITE) {
+                        pawnMove(myPosition, returnList, nextPosition, 8);
+                        if (myPosition.getRow() == 2) {
+                            calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
                         }
-                        if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                            pawnMove(myPosition, returnList, nextPosition, 1);
-                            if (myPosition.getRow() == 7) {
-                                calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
-                            }
+                    }
+                    if (pieceInWay == null && this.pieceColor == ChessGame.TeamColor.BLACK) {
+                        pawnMove(myPosition, returnList, nextPosition, 1);
+                        if (myPosition.getRow() == 7) {
+                            calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
                         }
                     }
                 }

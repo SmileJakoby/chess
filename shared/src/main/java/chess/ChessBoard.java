@@ -91,11 +91,9 @@ public class ChessBoard {
             for (int j = 1; j <= 8; j++)
             {
                 ChessPosition searchPosition = new ChessPosition(i, j);
-                if (this.getPiece(searchPosition) != null) {
-                    if (this.getPiece(searchPosition).getPieceType() == ChessPiece.PieceType.KING) {
-                        if (this.getPiece(searchPosition).getTeamColor() == teamColor) {
-                            kingPosition = searchPosition;
-                        }
+                if (this.getPiece(searchPosition) != null && this.getPiece(searchPosition).getPieceType() == ChessPiece.PieceType.KING) {
+                    if (this.getPiece(searchPosition).getTeamColor() == teamColor) {
+                        kingPosition = searchPosition;
                     }
                 }
             }
