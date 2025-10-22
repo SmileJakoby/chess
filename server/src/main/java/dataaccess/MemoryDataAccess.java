@@ -84,15 +84,15 @@ public class MemoryDataAccess implements DataAccess {
     public void addPlayer(Integer gameID, String username, String playerColor){
         if (playerColor.equals("BLACK"))
         {
-            GameData oldGameData = gameMap.get(gameID);
-            GameData newGameData = new GameData(oldGameData.gameID(), oldGameData.whiteUsername(), username, oldGameData.gameName(), oldGameData.game());
+            GameData oldData = gameMap.get(gameID);
+            GameData newGameData = new GameData(oldData.gameID(), oldData.whiteUsername(), username, oldData.gameName(), oldData.game());
             gameMap.remove(gameID);
             gameMap.put(gameID, newGameData);
         }
         if (playerColor.equals("WHITE"))
         {
-            GameData oldGameData = gameMap.get(gameID);
-            GameData newGameData = new GameData(oldGameData.gameID(), username, oldGameData.blackUsername(), oldGameData.gameName(), oldGameData.game());
+            GameData oldData = gameMap.get(gameID);
+            GameData newGameData = new GameData(oldData.gameID(), username, oldData.blackUsername(), oldData.gameName(), oldData.game());
             gameMap.remove(gameID);
             gameMap.put(gameID, newGameData);
         }

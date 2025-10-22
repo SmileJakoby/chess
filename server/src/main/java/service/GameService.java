@@ -28,7 +28,8 @@ public class GameService {
         GameData[] allGames = dataAccess.getGameDataList();
         GameResponse[] returnList = new GameResponse[allGames.length];
         for (int i = 0; i < allGames.length; i++) {
-            GameResponse insertResponse = new GameResponse(allGames[i].gameID(), allGames[i].whiteUsername(), allGames[i].blackUsername(), allGames[i].gameName());
+            var item = allGames[i];
+            GameResponse insertResponse = new GameResponse(item.gameID(), item.whiteUsername(), item.blackUsername(), item.gameName());
             returnList[i] = insertResponse;
         }
         return new GamesListResponse(returnList);
@@ -52,7 +53,8 @@ public class GameService {
         }
     }
 
-    public void joinGame(AuthData givenAuth, String playerColor, Integer gameID) throws UnauthorizedException, BadRequestException, AlreadyTakenException{
+    public void joinGame(AuthData givenAuth, String playerColor, Integer gameID)
+            throws UnauthorizedException, BadRequestException, AlreadyTakenException{
         if (dataAccess.getAuthData(givenAuth.authToken()) == null)
         {
             throw new UnauthorizedException("unauthorized");

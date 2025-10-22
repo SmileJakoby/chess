@@ -27,7 +27,7 @@ public class SessionService {
                 throw new UnauthorizedException("unauthorized");
             }
         }
-        String authToken = GenerateAuthToken();
+        String authToken = generateAuthToken();
         AuthData newAuthData = new AuthData(authToken, user.username());
         dataAccess.addAuthData(newAuthData);
         return new LoginResponse(user.username(), authToken);
@@ -41,7 +41,7 @@ public class SessionService {
             dataAccess.removeAuthData(givenAuth.authToken());
         }
     }
-    private String GenerateAuthToken()
+    private String generateAuthToken()
     {
         return UUID.randomUUID().toString();
     }

@@ -174,7 +174,7 @@ public class ServiceUnitTests {
         CreateGameResponse response = gameService.createGame(auth1, "The final showdown");
 
         Assertions.assertNotNull(response, "Did not get response");
-        Assertions.assertEquals("The final showdown", dataAccess.getGame(response.gameID()).gameName(), "game name did not match, or just wasn't found");
+        Assertions.assertEquals("The final showdown", dataAccess.getGame(response.gameID()).gameName(), "game name did not match/wasn't found");
     }
 
     @Test

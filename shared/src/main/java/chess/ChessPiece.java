@@ -48,7 +48,8 @@ public class ChessPiece {
     }
 
 
-    private void generateMoves(ChessBoard board, ChessPosition startingPos, ChessPosition currentPos, HashSet<ChessMove> givenSet, int rowAdd, int colAdd, boolean recursive){
+    private void generateMoves(ChessBoard board, ChessPosition startingPos, ChessPosition currentPos,
+                               HashSet<ChessMove> givenSet, int rowAdd, int colAdd, boolean recursive){
         int row = currentPos.getRow() + rowAdd;
         int col = currentPos.getColumn() + colAdd;
         if (row <= 8 && row >= 1 && col <= 8 && col >= 1) {
