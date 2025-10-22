@@ -144,15 +144,7 @@ public class ChessPiece {
                     pieceInWay = board.getPiece(nextPosition);
                     if (pieceInWay == null) {
                         if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                            if (nextPosition.getRow() != 8) {
-                                returnList.add(new ChessMove(myPosition, nextPosition, null));
-                            }
-                            else {
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
-                            }
+                            WhitePawnMove(myPosition, returnList, nextPosition);
                             //If white, and on second row (haven't moved yet) check for the next spot
                             if (myPosition.getRow() == 2) {
                                 nextPosition = new ChessPosition(myPosition.getRow() + rowMoveDirection + rowMoveDirection, myPosition.getColumn());
@@ -164,15 +156,7 @@ public class ChessPiece {
                         }
                         //If black, and on seventh row (haven't moved yet) check for the next spot
                         if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                            if (nextPosition.getRow() != 1) {
-                                returnList.add(new ChessMove(myPosition, nextPosition, null));
-                            }
-                            else {
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
-                                returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
-                            }
+                            BlackPawnMove(myPosition, returnList, nextPosition);
                             //If white, and on seventh row (haven't moved yet) check for the next spot
                             if (myPosition.getRow() == 7) {
                                 nextPosition = new ChessPosition(myPosition.getRow() + rowMoveDirection + rowMoveDirection, myPosition.getColumn());
@@ -187,69 +171,11 @@ public class ChessPiece {
                 //Check diagonal left
                 nextRow = myPosition.getRow() + rowMoveDirection;
                 nextCol = myPosition.getColumn() - 1;
-                if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
-                    nextPosition = new ChessPosition(nextRow, nextCol);
-                    pieceInWay = board.getPiece(nextPosition);
-                    if (pieceInWay != null) {
-                        if (pieceInWay.getTeamColor() != this.pieceColor) {
-                            if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                                if (nextPosition.getRow() != 8) {
-                                    returnList.add(new ChessMove(myPosition, nextPosition, null));
-                                }
-                                else{
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
-                                }
-                            }
-                            if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                                if (nextPosition.getRow() != 1) {
-                                    returnList.add(new ChessMove(myPosition, nextPosition, null));
-                                }
-                                else{
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
-                                }
-                            }
-                        }
-                    }
-                }
+                pawnDiagonalCheck(board, myPosition, returnList, nextRow, nextCol);
                 //Check diagonal right
                 nextRow = myPosition.getRow() + rowMoveDirection;
                 nextCol = myPosition.getColumn() + 1;
-                if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
-                    nextPosition = new ChessPosition(nextRow, nextCol);
-                    pieceInWay = board.getPiece(nextPosition);
-                    if (pieceInWay != null) {
-                        if (pieceInWay.getTeamColor() != this.pieceColor) {
-                            if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                                if (nextPosition.getRow() != 8) {
-                                    returnList.add(new ChessMove(myPosition, nextPosition, null));
-                                }
-                                else{
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
-                                }
-                            }
-                            if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                                if (nextPosition.getRow() != 1) {
-                                    returnList.add(new ChessMove(myPosition, nextPosition, null));
-                                }
-                                else{
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
-                                    returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
-                                }
-                            }
-                        }
-                    }
-                }
+                pawnDiagonalCheck(board, myPosition, returnList, nextRow, nextCol);
 
 
                 return returnList;
@@ -283,6 +209,49 @@ public class ChessPiece {
                 return returnList;
         }
         return List.of();
+    }
+
+    private void BlackPawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
+        if (nextPosition.getRow() != 1) {
+            returnList.add(new ChessMove(myPosition, nextPosition, null));
+        }
+        else {
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
+        }
+    }
+
+    private void WhitePawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
+        if (nextPosition.getRow() != 8) {
+            returnList.add(new ChessMove(myPosition, nextPosition, null));
+        }
+        else {
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
+            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
+        }
+    }
+
+    private void pawnDiagonalCheck(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> returnList, int nextRow, int nextCol) {
+        ChessPosition nextPosition;
+        ChessPiece pieceInWay;
+        if (nextRow >= 1 && nextRow <= 8 && nextCol >= 1 && nextCol <= 8) {
+            nextPosition = new ChessPosition(nextRow, nextCol);
+            pieceInWay = board.getPiece(nextPosition);
+            if (pieceInWay != null) {
+                if (pieceInWay.getTeamColor() != this.pieceColor) {
+                    if (this.pieceColor == ChessGame.TeamColor.WHITE) {
+                        WhitePawnMove(myPosition, returnList, nextPosition);
+                    }
+                    if (this.pieceColor == ChessGame.TeamColor.BLACK) {
+                        BlackPawnMove(myPosition, returnList, nextPosition);
+                    }
+                }
+            }
+        }
     }
 
     @Override
