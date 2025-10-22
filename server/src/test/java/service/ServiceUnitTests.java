@@ -3,9 +3,7 @@ package service;
 import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
-import datamodel.GameResponse;
-import datamodel.LoginResponse;
-import datamodel.RegisterResponse;
+import datamodel.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -129,7 +127,68 @@ public class ServiceUnitTests {
     }
 
     @Test
-    @Order(13)
+    @Order(8)
+    @DisplayName("List Games Positive")
+    public void listGamesPositive() throws Exception{
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
+        dataAccess.addUser(user1);
+        dataAccess.addUser(user2);
+        AuthData auth1 = new AuthData("qwerty", "Jacob");
+        AuthData auth2 = new AuthData("asdf", "Luke");
+        dataAccess.addAuthData(auth1);
+        dataAccess.addAuthData(auth2);
+        GameData game1 = new GameData(1,"Jacob","Luke","1v1 me bro",new ChessGame());
+        GameData game2 = new GameData(2,"Jacob","Luke","Rematch",new ChessGame());
+        dataAccess.addGame(game1);
+        dataAccess.addGame(game2);
+        GamesListResponse response = gameService.getGamesList(auth1);
+        Assertions.assertNotNull(response, "GamesList was null");
+    }
+
+    @Test
+    @Order(9)
+    @DisplayName("List Games Negative")
+    public void listGamesNegative() {
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
+        dataAccess.addUser(user1);
+        dataAccess.addUser(user2);
+        AuthData auth1 = new AuthData("I am not authorized", "Jacob");
+        GameData game1 = new GameData(1,"Jacob","Luke","1v1 me bro",new ChessGame());
+        GameData game2 = new GameData(2,"Jacob","Luke","Rematch",new ChessGame());
+        dataAccess.addGame(game1);
+        dataAccess.addGame(game2);
+        Assertions.assertThrows(UnauthorizedException.class, () -> {gameService.getGamesList(auth1);});
+    }
+
+    @Test
+    @Order(10)
+    @DisplayName("Create Game Positive")
+    public void createGamePositive() throws Exception{
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        dataAccess.addUser(user1);
+        AuthData auth1 = new AuthData("qwerty", "Jacob");
+        dataAccess.addAuthData(auth1);
+
+        CreateGameResponse response = gameService.createGame(auth1, "The final showdown");
+
+        Assertions.assertNotNull(response, "Did not get response");
+        Assertions.assertEquals("The final showdown", dataAccess.getGame(response.gameID()).gameName(), "game name did not match, or just wasn't found");
+    }
+
+    @Test
+    @Order(11)
+    @DisplayName("Create Game Negative")
+    public void createGameNegative() {
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        dataAccess.addUser(user1);
+        AuthData auth1 = new AuthData("I am not authorized", "Jacob");
+        Assertions.assertThrows(UnauthorizedException.class, () -> {gameService.createGame(auth1, "illegal game");});
+    }
+
+    @Test
+    @Order(12)
     @DisplayName("Join Positive")
     public void joinPositive() throws Exception{
         UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
@@ -144,5 +203,22 @@ public class ServiceUnitTests {
         dataAccess.addGame(game1);
         gameService.joinGame(auth1, "BLACK", 1);
         Assertions.assertEquals(user1.username(), dataAccess.getGame(1).blackUsername(), "black player username mismatch");
+    }
+
+    @Test
+    @Order(13)
+    @DisplayName("Join Game Negative")
+    public void joinGameNegative() {
+        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
+        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
+        dataAccess.addUser(user1);
+        dataAccess.addUser(user2);
+        AuthData auth1 = new AuthData("qwerty", "Jacob");
+        AuthData auth2 = new AuthData("asdf", "Luke");
+        dataAccess.addAuthData(auth1);
+        dataAccess.addAuthData(auth2);
+        GameData game1 = new GameData(1,"Jacob",null,"1v1 me bro",new ChessGame());
+        dataAccess.addGame(game1);
+        Assertions.assertThrows(AlreadyTakenException.class, () -> {gameService.joinGame(auth1, "WHITE", 1);});
     }
 }
