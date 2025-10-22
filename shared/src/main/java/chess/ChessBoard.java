@@ -184,16 +184,4 @@ public class ChessBoard {
     public int hashCode() {
         return Arrays.deepHashCode(squares);
     }
-//    @Override
-//    public ChessBoard clone(){
-//        ChessBoard returnBoard = new ChessBoard();
-//        for (int i = 1; i <= 8; i++){
-//            for (int j = 1; j <= 8; j++) {
-//                ChessPosition positionToSet = new ChessPosition(i,j);
-//                ChessPiece pieceToPlace = this.getPiece(positionToSet);
-//                returnBoard.addPiece(positionToSet, pieceToPlace);
-//            }
-//        }
-//        return returnBoard;
-//    }
 }

@@ -144,26 +144,18 @@ public class ChessPiece {
                     pieceInWay = board.getPiece(nextPosition);
                     if (pieceInWay == null) {
                         if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                            WhitePawnMove(myPosition, returnList, nextPosition);
+                            whitePawnMove(myPosition, returnList, nextPosition);
                             //If white, and on second row (haven't moved yet) check for the next spot
                             if (myPosition.getRow() == 2) {
-                                nextPosition = new ChessPosition(myPosition.getRow() + rowMoveDirection + rowMoveDirection, myPosition.getColumn());
-                                pieceInWay = board.getPiece(nextPosition);
-                                if (pieceInWay == null) {
-                                    returnList.add(new ChessMove(myPosition, nextPosition, null));
-                                }
+                                calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
                             }
                         }
                         //If black, and on seventh row (haven't moved yet) check for the next spot
                         if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                            BlackPawnMove(myPosition, returnList, nextPosition);
+                            blackPawnMove(myPosition, returnList, nextPosition);
                             //If white, and on seventh row (haven't moved yet) check for the next spot
                             if (myPosition.getRow() == 7) {
-                                nextPosition = new ChessPosition(myPosition.getRow() + rowMoveDirection + rowMoveDirection, myPosition.getColumn());
-                                pieceInWay = board.getPiece(nextPosition);
-                                if (pieceInWay == null) {
-                                    returnList.add(new ChessMove(myPosition, nextPosition, null));
-                                }
+                                calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
                             }
                         }
                     }
@@ -211,7 +203,17 @@ public class ChessPiece {
         return List.of();
     }
 
-    private void BlackPawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
+    private void calculatePawnExtraMove(ChessBoard board, ChessPosition myPosition, HashSet<ChessMove> returnList, int rowMoveDirection) {
+        ChessPosition nextPosition;
+        ChessPiece pieceInWay;
+        nextPosition = new ChessPosition(myPosition.getRow() + rowMoveDirection + rowMoveDirection, myPosition.getColumn());
+        pieceInWay = board.getPiece(nextPosition);
+        if (pieceInWay == null) {
+            returnList.add(new ChessMove(myPosition, nextPosition, null));
+        }
+    }
+
+    private void blackPawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
         if (nextPosition.getRow() != 1) {
             returnList.add(new ChessMove(myPosition, nextPosition, null));
         }
@@ -223,7 +225,7 @@ public class ChessPiece {
         }
     }
 
-    private void WhitePawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
+    private void whitePawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
         if (nextPosition.getRow() != 8) {
             returnList.add(new ChessMove(myPosition, nextPosition, null));
         }
@@ -244,10 +246,10 @@ public class ChessPiece {
             if (pieceInWay != null) {
                 if (pieceInWay.getTeamColor() != this.pieceColor) {
                     if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                        WhitePawnMove(myPosition, returnList, nextPosition);
+                        whitePawnMove(myPosition, returnList, nextPosition);
                     }
                     if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                        BlackPawnMove(myPosition, returnList, nextPosition);
+                        blackPawnMove(myPosition, returnList, nextPosition);
                     }
                 }
             }

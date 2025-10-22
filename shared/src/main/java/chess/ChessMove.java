@@ -71,9 +71,6 @@ public class ChessMove {
             return false;
         }
         return true;
-        //return Objects.equals(startPosition, chessMove.startPosition)
-        //&& Objects.equals(endPosition, chessMove.endPosition)
-        //&& promotionPiece == chessMove.promotionPiece;
     }
 
     @Override
