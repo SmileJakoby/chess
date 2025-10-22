@@ -83,37 +83,22 @@ public class ChessPiece {
         HashSet<ChessMove> returnList = new HashSet<>();
         switch(piece.getPieceType()) {
             case BISHOP:
-                //Down and left
                 generateMoves(board, myPosition, myPosition, returnList, -1, -1, true);
-                //Down and right
                 generateMoves(board, myPosition, myPosition, returnList, -1, 1, true);
-                //Up and right
                 generateMoves(board, myPosition, myPosition, returnList, 1, 1, true);
-                //Up and left
                 generateMoves(board, myPosition, myPosition, returnList, 1, -1, true);
                 return returnList;
             case KING:
-                //The generateMoves function was designed for recursive pieces. The knight and King suffer for this.
-                //Up
                 generateMoves(board, myPosition, myPosition, returnList, 1, 0, false);
-                //UpRight
                 generateMoves(board, myPosition, myPosition, returnList, 1, 1, false);
-                //Right
                 generateMoves(board, myPosition, myPosition, returnList, 0, 1, false);
-                //RightDown
                 generateMoves(board, myPosition, myPosition, returnList, -1, 1, false);
-                //Down
                 generateMoves(board, myPosition, myPosition, returnList, -1, 0, false);
-                //DownLeft
                 generateMoves(board, myPosition, myPosition, returnList, -1, -1, false);
-                //Left
                 generateMoves(board, myPosition, myPosition, returnList, 0, -1, false);
-                //UpLeft
                 generateMoves(board, myPosition, myPosition, returnList, 1, -1, false);
                 return returnList;
             case KNIGHT:
-                //The generateMoves function was designed for recursive pieces. The knight and King suffer for this.
-                //Also, I'm not going to add comments for horse moves. They are all an L.
                 generateMoves(board, myPosition, myPosition, returnList, 2, 1, false);
                 generateMoves(board, myPosition, myPosition, returnList, 1, 2, false);
                 generateMoves(board, myPosition, myPosition, returnList, -1, 2, false);
@@ -124,8 +109,6 @@ public class ChessPiece {
                 generateMoves(board, myPosition, myPosition, returnList, 2, -1, false);
                 return returnList;
             case PAWN:
-                //Pawn is the most complex piece, and basically requires entirely custom code.
-
                 int rowMoveDirection;
                 if (this.pieceColor == ChessGame.TeamColor.WHITE){
                     rowMoveDirection = 1;
@@ -133,7 +116,6 @@ public class ChessPiece {
                 else {
                     rowMoveDirection = -1;
                 }
-
                 //Check for forward move
                 int nextRow = myPosition.getRow() + rowMoveDirection;
                 int nextCol = myPosition.getColumn();
@@ -144,59 +126,40 @@ public class ChessPiece {
                     pieceInWay = board.getPiece(nextPosition);
                     if (pieceInWay == null) {
                         if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                            whitePawnMove(myPosition, returnList, nextPosition);
-                            //If white, and on second row (haven't moved yet) check for the next spot
+                            pawnMove(myPosition, returnList, nextPosition, 8);
                             if (myPosition.getRow() == 2) {
                                 calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
                             }
                         }
-                        //If black, and on seventh row (haven't moved yet) check for the next spot
                         if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                            blackPawnMove(myPosition, returnList, nextPosition);
-                            //If white, and on seventh row (haven't moved yet) check for the next spot
+                            pawnMove(myPosition, returnList, nextPosition, 1);
                             if (myPosition.getRow() == 7) {
                                 calculatePawnExtraMove(board, myPosition, returnList, rowMoveDirection);
                             }
                         }
                     }
                 }
-                //Check diagonal left
                 nextRow = myPosition.getRow() + rowMoveDirection;
                 nextCol = myPosition.getColumn() - 1;
                 pawnDiagonalCheck(board, myPosition, returnList, nextRow, nextCol);
-                //Check diagonal right
                 nextRow = myPosition.getRow() + rowMoveDirection;
                 nextCol = myPosition.getColumn() + 1;
                 pawnDiagonalCheck(board, myPosition, returnList, nextRow, nextCol);
-
-
                 return returnList;
             case QUEEN:
-                //Up
                 generateMoves(board, myPosition, myPosition, returnList, 1, 0, true);
-                //UpRight
                 generateMoves(board, myPosition, myPosition, returnList, 1, 1, true);
-                //Right
                 generateMoves(board, myPosition, myPosition, returnList, 0, 1, true);
-                //RightDown
                 generateMoves(board, myPosition, myPosition, returnList, -1, 1, true);
-                //Down
                 generateMoves(board, myPosition, myPosition, returnList, -1, 0, true);
-                //DownLeft
                 generateMoves(board, myPosition, myPosition, returnList, -1, -1, true);
-                //Left
                 generateMoves(board, myPosition, myPosition, returnList, 0, -1, true);
-                //UpLeft
                 generateMoves(board, myPosition, myPosition, returnList, 1, -1, true);
                 return returnList;
             case ROOK:
-                //Up
                 generateMoves(board, myPosition, myPosition, returnList, 1, 0, true);
-                //Right
                 generateMoves(board, myPosition, myPosition, returnList, 0, 1, true);
-                //Down
                 generateMoves(board, myPosition, myPosition, returnList, -1, 0, true);
-                //Left
                 generateMoves(board, myPosition, myPosition, returnList, 0, -1, true);
                 return returnList;
         }
@@ -213,20 +176,8 @@ public class ChessPiece {
         }
     }
 
-    private void blackPawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
-        if (nextPosition.getRow() != 1) {
-            returnList.add(new ChessMove(myPosition, nextPosition, null));
-        }
-        else {
-            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.BISHOP));
-            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.KNIGHT));
-            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.QUEEN));
-            returnList.add(new ChessMove(myPosition, nextPosition, PieceType.ROOK));
-        }
-    }
-
-    private void whitePawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition) {
-        if (nextPosition.getRow() != 8) {
+    private void pawnMove(ChessPosition myPosition, HashSet<ChessMove> returnList, ChessPosition nextPosition, int promotionRow) {
+        if (nextPosition.getRow() != promotionRow) {
             returnList.add(new ChessMove(myPosition, nextPosition, null));
         }
         else {
@@ -246,10 +197,10 @@ public class ChessPiece {
             if (pieceInWay != null) {
                 if (pieceInWay.getTeamColor() != this.pieceColor) {
                     if (this.pieceColor == ChessGame.TeamColor.WHITE) {
-                        whitePawnMove(myPosition, returnList, nextPosition);
+                        pawnMove(myPosition, returnList, nextPosition, 8);
                     }
                     if (this.pieceColor == ChessGame.TeamColor.BLACK) {
-                        blackPawnMove(myPosition, returnList, nextPosition);
+                        pawnMove(myPosition, returnList, nextPosition, 1);
                     }
                 }
             }
