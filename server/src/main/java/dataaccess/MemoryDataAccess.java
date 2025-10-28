@@ -61,8 +61,9 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void addGame(GameData gameData){
+    public int addGame(GameData gameData){
         gameMap.put(gameData.gameID(), gameData);
+        return gameData.gameID();
     }
 
     @Override

@@ -27,25 +27,21 @@ public class SQLDataAccess implements DataAccess {
 
     @Override
     public void clear(){
-        usersMap.clear();
-        authMap.clear();
-        gameMap.clear();
+        var userDeleteStatement = "DELETE FROM users";
+        var authDeleteStatement = "DELETE FROM auth";
+        var gameDeleteStatement = "DELETE FROM game";
+        try{executeUpdate(userDeleteStatement);}
+        catch(Exception e){System.out.println(e.getMessage());}
+        try{executeUpdate(authDeleteStatement);}
+        catch(Exception e){System.out.println(e.getMessage());}
+        try{executeUpdate(gameDeleteStatement);}
+        catch(Exception e){System.out.println(e.getMessage());}
     }
     @Override
     public void addUser(UserData user) {
         var statement = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
         try{executeUpdate(statement, user.username(), user.email(), user.password());}
         catch(Exception e){System.out.println(e.getMessage());}
-    }
-
-    public void example() throws Exception {
-        try (var conn = DatabaseManager.getConnection()) {
-            try (var preparedStatement = conn.prepareStatement("SELECT 1+1")) {
-                var rs = preparedStatement.executeQuery();
-                rs.next();
-                System.out.println(rs.getInt(1));
-            }
-        }
     }
 
     @Override
@@ -109,7 +105,9 @@ public class SQLDataAccess implements DataAccess {
 
     @Override
     public void removeAuthData(String authToken) {
-        authMap.remove(authToken);
+        var userDeleteStatement = "DELETE FROM auth WHERE authToken = ?";
+        try{executeUpdate(userDeleteStatement, authToken);}
+        catch(Exception e){System.out.println(e.getMessage());}
     }
 
     @Override
@@ -129,13 +127,34 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public void addGame(GameData gameData){
-        gameMap.put(gameData.gameID(), gameData);
+    public int addGame(GameData gameData){
+        var statement = "INSERT INTO game (whiteusername, blackusername, gamename, game) VALUES (?, ?, ?, ?)";
+        String json = new Gson().toJson(gameData.game());
+        try{
+            return executeUpdate(statement, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
+        }
+        catch(Exception e){System.out.println(e.getMessage());}
+        return 0;
     }
 
     @Override
     public GameData getGame(Integer gameID){
-        return gameMap.get(gameID);
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameid, whiteusername, blackusername, gamename, game FROM game WHERE gameid = ?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, gameID);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readGameData(rs);
+                    }
+                }
+            }
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
+        return null;
     }
 
     @Override
@@ -147,6 +166,17 @@ public class SQLDataAccess implements DataAccess {
             }
         }
         return null;
+    }
+
+    private GameData readGameData (ResultSet rs) throws SQLException {
+
+        var gameID = rs.getInt("gameid");
+        var whiteUsername = rs.getString("whiteusername");
+        var blackUsername = rs.getString("blackusername");
+        var gameName = rs.getString("gamename");
+        var gameJson = rs.getString("game");
+        ChessGame game = new Gson().fromJson(gameJson, ChessGame.class);
+        return new GameData(gameID, whiteUsername, blackUsername, gameName, game);
     }
 
     @Override
@@ -192,7 +222,7 @@ public class SQLDataAccess implements DataAccess {
                 whiteusername VARCHAR(255) DEFAULT NULL,
                 blackusername VARCHAR(255) DEFAULT NULL,
                 gamename VARCHAR(255) NOT NULL,
-                game MEDIUMBLOB NOT NULL,
+                game LONGTEXT NOT NULL,
                 PRIMARY KEY (gameid)
                 )"""
     };
