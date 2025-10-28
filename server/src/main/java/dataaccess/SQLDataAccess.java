@@ -1,6 +1,5 @@
 package dataaccess;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.AuthData;
@@ -20,6 +19,12 @@ public class SQLDataAccess implements DataAccess {
     private final HashMap<String, UserData> usersMap = new HashMap<>();
     private final HashMap<String, AuthData> authMap = new HashMap<>();
     private final HashMap<Integer, GameData> gameMap = new HashMap<>();
+
+    public SQLDataAccess() {
+        try {configureDatabase();}
+        catch(Exception e) {System.out.println(e.getMessage());}
+    }
+
     @Override
     public void clear(){
         usersMap.clear();
@@ -28,7 +33,9 @@ public class SQLDataAccess implements DataAccess {
     }
     @Override
     public void addUser(UserData user) {
-        usersMap.put(user.username(), user);
+        var statement = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+        try{executeUpdate(statement, user.username(), user.email(), user.password());}
+        catch(Exception e){System.out.println(e.getMessage());}
     }
 
     public void example() throws Exception {
@@ -43,18 +50,61 @@ public class SQLDataAccess implements DataAccess {
 
     @Override
     public UserData getUser(String username) {
-        return usersMap.get(username);
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, email, password FROM users WHERE username = ?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readUserData(rs);
+                    }
+                }
+            }
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
+        return null;
     }
-
+    private UserData readUserData (ResultSet rs) throws SQLException {
+        var username = rs.getString("username");
+        var email = rs.getString("email");
+        var password = rs.getString("password");
+        return new UserData(username, email, password);
+    }
 
     @Override
     public void addAuthData(AuthData authData) {
-        authMap.put(authData.authToken(), authData);
+        var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
+        try{executeUpdate(statement, authData.authToken(), authData.username());}
+        catch(Exception e){System.out.println(e.getMessage());}
     }
 
     @Override
     public AuthData getAuthData(String authToken) {
-        return authMap.get(authToken);
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT authToken, username FROM auth WHERE authToken = ?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, authToken);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readAuthData(rs);
+                    }
+                }
+            }
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
+        return null;
+    }
+
+    private AuthData readAuthData (ResultSet rs) throws SQLException {
+        var authToken = rs.getString("authToken");
+        var username = rs.getString("username");
+        return new AuthData(authToken, username);
     }
 
     @Override
@@ -138,7 +188,7 @@ public class SQLDataAccess implements DataAccess {
                 )""",
             """
                 CREATE TABLE IF NOT EXISTS game (
-                gameid VARCHAR(255) NOT NULL AUTO_INCREMENT,
+                gameid INT NOT NULL AUTO_INCREMENT,
                 whiteusername VARCHAR(255) DEFAULT NULL,
                 blackusername VARCHAR(255) DEFAULT NULL,
                 gamename VARCHAR(255) NOT NULL,
