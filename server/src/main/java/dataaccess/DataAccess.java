@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -18,4 +19,5 @@ public interface DataAccess {
     void addPlayer(Integer gameID, String username, String playerColor);
     GameData getGameByName(String gameName);
     Integer getGameCount();
+    void updateGame(Integer gameID, GameData game);
 }

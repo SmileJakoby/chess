@@ -1,14 +1,12 @@
 package dataaccess;
 
-import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 
-
 import java.util.HashMap;
 
-public class MemoryDataAccess implements DataAccess {
+public class SQLDataAccess implements DataAccess {
     private final HashMap<String, UserData> usersMap = new HashMap<>();
     private final HashMap<String, AuthData> authMap = new HashMap<>();
     private final HashMap<Integer, GameData> gameMap = new HashMap<>();
@@ -21,6 +19,16 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public void addUser(UserData user) {
         usersMap.put(user.username(), user);
+    }
+
+    public void example() throws Exception {
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement("SELECT 1+1")) {
+                var rs = preparedStatement.executeQuery();
+                rs.next();
+                System.out.println(rs.getInt(1));
+            }
+        }
     }
 
     @Override
@@ -98,7 +106,6 @@ public class MemoryDataAccess implements DataAccess {
             gameMap.put(gameID, newGameData);
         }
     }
-
     @Override
     public void updateGame(Integer gameID, GameData game){
         gameMap.remove(gameID);
