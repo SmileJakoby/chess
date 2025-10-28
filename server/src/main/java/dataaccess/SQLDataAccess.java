@@ -112,18 +112,45 @@ public class SQLDataAccess implements DataAccess {
 
     @Override
     public GameData[] getGameDataList(){
-        GameData[] returnList = new GameData[gameMap.size()];
+        GameData[] returnList = new GameData[getGameCount()];
         int i = 0;
-        for (HashMap.Entry<Integer, GameData> entry : gameMap.entrySet()){
-            returnList[i] = entry.getValue();
-            i++;
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameid FROM game";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        returnList[i] = getGame(rs.getInt(1));
+                        i++;
+                    }
+                }
+            }
+            return returnList;
         }
-        return returnList;
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            return null;
+            //return returnList;
+        }
+        //return returnList;
     }
 
     @Override
     public Integer getGameCount() {
-        return gameMap.size();
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT COUNT(*) FROM game";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            return null;
+        }
+        return null;
     }
 
     @Override
@@ -158,6 +185,7 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
+    //TODO: SQL implementation of this
     public GameData getGameByName(String gameName) {
 
         for (HashMap.Entry<Integer, GameData> entry : gameMap.entrySet()){
@@ -181,6 +209,7 @@ public class SQLDataAccess implements DataAccess {
 
     @Override
     public void addPlayer(Integer gameID, String username, String playerColor){
+        //TODO: SQL implementation of this
         if (playerColor.equals("BLACK"))
         {
             GameData oldData = gameMap.get(gameID);
@@ -198,6 +227,7 @@ public class SQLDataAccess implements DataAccess {
     }
     @Override
     public void updateGame(Integer gameID, GameData game){
+        //TODO: SQL implementation of this
         gameMap.remove(gameID);
         gameMap.put(gameID, game);
     }

@@ -48,8 +48,8 @@ public class GameService {
             Integer gameID = dataAccess.getGameCount() + 1;
             ChessGame newGame = new ChessGame();
             GameData newGameData = new GameData(gameID, null, null, gameName, newGame);
-            dataAccess.addGame(newGameData);
-            return new CreateGameResponse(gameID);
+            int returnInt = dataAccess.addGame(newGameData);
+            return new CreateGameResponse(returnInt);
         }
     }
 
