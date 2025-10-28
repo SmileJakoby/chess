@@ -1,10 +1,20 @@
 package dataaccess;
 
+import chess.ChessBoard;
+import chess.ChessGame;
+import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
+
+import static java.sql.Statement.RETURN_GENERATED_KEYS;
+import static java.sql.Types.NULL;
 
 public class SQLDataAccess implements DataAccess {
     private final HashMap<String, UserData> usersMap = new HashMap<>();
@@ -110,5 +120,69 @@ public class SQLDataAccess implements DataAccess {
     public void updateGame(Integer gameID, GameData game){
         gameMap.remove(gameID);
         gameMap.put(gameID, game);
+    }
+
+    private final String[] createStatements = {
+            """
+                CREATE TABLE IF NOT EXISTS users (
+                username VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                PRIMARY KEY (username)
+                )""",
+            """
+                CREATE TABLE IF NOT EXISTS auth (
+                authToken VARCHAR(255) NOT NULL,
+                username VARCHAR(255) NOT NULL,
+                PRIMARY KEY (authToken)
+                )""",
+            """
+                CREATE TABLE IF NOT EXISTS game (
+                gameid VARCHAR(255) NOT NULL AUTO_INCREMENT,
+                whiteusername VARCHAR(255) DEFAULT NULL,
+                blackusername VARCHAR(255) DEFAULT NULL,
+                gamename VARCHAR(255) NOT NULL,
+                game MEDIUMBLOB NOT NULL,
+                PRIMARY KEY (gameid)
+                )"""
+    };
+    private int executeUpdate(String statement, Object... params) throws DataAccessException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
+                for (int i = 0; i < params.length; i++) {
+                    Object param = params[i];
+                    if (param instanceof String p) ps.setString(i + 1, p);
+                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
+                    else if (param instanceof ChessGame p){
+                        var json = new Gson().toJson(p);
+                        ps.setString(i + 1, json);
+                    }
+                    else if (param == null) ps.setNull(i + 1, NULL);
+                }
+                ps.executeUpdate();
+
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+
+                return 0;
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
+        }
+    }
+    private void configureDatabase() throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (Connection conn = DatabaseManager.getConnection()){
+            for (String statement : createStatements) {
+                try (var preparedStatement = conn.prepareStatement(statement)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+        }
+        catch (SQLException ex) {
+            throw new DataAccessException("failed to create database", ex);
+        }
     }
 }
