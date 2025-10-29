@@ -200,10 +200,10 @@ public class DataAccessUnitTests {
         AuthData auth2 = new AuthData("asdf", "Luke");
         dataAccess.addAuthData(auth1);
         dataAccess.addAuthData(auth2);
-        GameData game1 = new GameData(1,"Jacob",null,"1v1 me bro",new ChessGame());
-        dataAccess.addGame(game1);
-        gameService.joinGame(auth1, "BLACK", 1);
-        Assertions.assertEquals(user1.username(), dataAccess.getGame(1).blackUsername(), "black player username mismatch");
+        GameData game1 = new GameData(null,"Jacob",null,"1v1 me bro",new ChessGame());
+        int game1ID = dataAccess.addGame(game1);
+        gameService.joinGame(auth1, "BLACK", game1ID);
+        Assertions.assertEquals(user1.username(), dataAccess.getGame(game1ID).blackUsername(), "black player username mismatch");
     }
 
     @Test
@@ -218,8 +218,8 @@ public class DataAccessUnitTests {
         AuthData auth2 = new AuthData("asdf", "Luke");
         dataAccess.addAuthData(auth1);
         dataAccess.addAuthData(auth2);
-        GameData game1 = new GameData(1,"Jacob",null,"1v1 me bro",new ChessGame());
-        dataAccess.addGame(game1);
-        Assertions.assertThrows(AlreadyTakenException.class, () -> {gameService.joinGame(auth1, "WHITE", 1);});
+        GameData game1 = new GameData(null,"Jacob",null,"1v1 me bro",new ChessGame());
+        int game1ID = dataAccess.addGame(game1);
+        Assertions.assertThrows(AlreadyTakenException.class, () -> {gameService.joinGame(auth1, "WHITE", game1ID);});
     }
 }

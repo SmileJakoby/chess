@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -40,7 +41,8 @@ public class SQLDataAccess implements DataAccess {
     @Override
     public void addUser(UserData user) {
         var statement = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
-        try{executeUpdate(statement, user.username(), user.email(), user.password());}
+        String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        try{executeUpdate(statement, user.username(), user.email(), hash);}
         catch(Exception e){System.out.println(e.getMessage());}
     }
 
@@ -209,20 +211,17 @@ public class SQLDataAccess implements DataAccess {
 
     @Override
     public void addPlayer(Integer gameID, String username, String playerColor){
-        //TODO: SQL implementation of this
         if (playerColor.equals("BLACK"))
         {
-            GameData oldData = gameMap.get(gameID);
-            GameData newGameData = new GameData(oldData.gameID(), oldData.whiteUsername(), username, oldData.gameName(), oldData.game());
-            gameMap.remove(gameID);
-            gameMap.put(gameID, newGameData);
+            var statement = "UPDATE game SET blackusername = ? WHERE gameid = ?";
+            try{executeUpdate(statement, username, gameID);}
+            catch(Exception e){System.out.println(e.getMessage());}
         }
         if (playerColor.equals("WHITE"))
         {
-            GameData oldData = gameMap.get(gameID);
-            GameData newGameData = new GameData(oldData.gameID(), username, oldData.blackUsername(), oldData.gameName(), oldData.game());
-            gameMap.remove(gameID);
-            gameMap.put(gameID, newGameData);
+            var statement = "UPDATE game SET whiteusername = ? WHERE gameid = ?";
+            try{executeUpdate(statement, username, gameID);}
+            catch(Exception e){System.out.println(e.getMessage());}
         }
     }
     @Override

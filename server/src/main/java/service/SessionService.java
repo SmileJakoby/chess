@@ -4,6 +4,7 @@ import dataaccess.DataAccess;
 import datamodel.LoginResponse;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.UUID;
 
@@ -24,7 +25,10 @@ public class SessionService {
         else
         {
             if (!dataAccess.getUser(user.username()).password().equals(user.password())) {
-                throw new UnauthorizedException("unauthorized");
+                //String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+                if (!BCrypt.checkpw(user.password(), dataAccess.getUser(user.username()).password())) {
+                    throw new UnauthorizedException("unauthorized");
+                }
             }
         }
         String authToken = generateAuthToken();

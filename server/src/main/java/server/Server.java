@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.MemoryDataAccess;
+import dataaccess.SQLDataAccess;
 import datamodel.JoinGameRequest;
 import model.GameData;
 import model.UserData;
@@ -18,7 +19,7 @@ public class Server {
     private final GameService gameService;
     private final DatabaseService databaseService;
     public Server() {
-        var dataAccess = new MemoryDataAccess();
+        var dataAccess = new SQLDataAccess();
         userService = new UserService(dataAccess);
         sessionService = new SessionService(dataAccess);
         gameService = new GameService(dataAccess);
