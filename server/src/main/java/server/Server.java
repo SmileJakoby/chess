@@ -77,6 +77,10 @@ public class Server {
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(403).result(errorMsg);
         }
+        catch(DataAccessException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(500).result(errorMsg);
+        }
     }
     private void login(Context ctx){
         try {
@@ -96,6 +100,10 @@ public class Server {
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(401).result(errorMsg);
         }
+        catch(DataAccessException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(500).result(errorMsg);
+        }
     }
     private void logout(Context ctx){
         try {
@@ -108,6 +116,10 @@ public class Server {
         catch(UnauthorizedException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(401).result(errorMsg);
+        }
+        catch(DataAccessException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(500).result(errorMsg);
         }
     }
     private void listGames(Context ctx){
@@ -122,6 +134,10 @@ public class Server {
         catch(UnauthorizedException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(401).result(errorMsg);
+        }
+        catch(DataAccessException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(500).result(errorMsg);
         }
     }
 
@@ -150,6 +166,7 @@ public class Server {
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(400).result(errorMsg);
         }
+
     }
 
     private void joinGame(Context ctx){
@@ -176,6 +193,10 @@ public class Server {
         catch(AlreadyTakenException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(403).result(errorMsg);
+        }
+        catch(DataAccessException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(500).result(errorMsg);
         }
     }
 }

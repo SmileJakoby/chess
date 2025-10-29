@@ -20,7 +20,7 @@ public class GameService {
         this.dataAccess = dataAccess;
     }
 
-    public GamesListResponse getGamesList(AuthData givenAuth) throws UnauthorizedException{
+    public GamesListResponse getGamesList(AuthData givenAuth) throws UnauthorizedException, DataAccessException {
         if (dataAccess.getAuthData(givenAuth.authToken()) == null)
         {
             throw new UnauthorizedException("unauthorized");
@@ -58,7 +58,7 @@ public class GameService {
     }
 
     public void joinGame(AuthData givenAuth, String playerColor, Integer gameID)
-            throws UnauthorizedException, BadRequestException, AlreadyTakenException{
+            throws UnauthorizedException, BadRequestException, AlreadyTakenException, DataAccessException {
         if (dataAccess.getAuthData(givenAuth.authToken()) == null)
         {
             throw new UnauthorizedException("unauthorized");

@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import datamodel.RegisterResponse;
 import model.AuthData;
 import model.UserData;
@@ -11,7 +12,7 @@ public class UserService {
     public UserService(DataAccess dataAccess){
         this.dataAccess = dataAccess;
     }
-    public RegisterResponse register(UserData user) throws BadRequestException, AlreadyTakenException {
+    public RegisterResponse register(UserData user) throws BadRequestException, AlreadyTakenException, DataAccessException {
         var existingUser = dataAccess.getUser(user.username());
         if (existingUser != null) {
             throw new AlreadyTakenException("already taken");

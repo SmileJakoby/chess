@@ -7,7 +7,6 @@ import model.GameData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,9 +17,6 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 public class SQLDataAccess implements DataAccess {
-    private final HashMap<String, UserData> usersMap = new HashMap<>();
-    private final HashMap<String, AuthData> authMap = new HashMap<>();
-    private final HashMap<Integer, GameData> gameMap = new HashMap<>();
 
     public SQLDataAccess() {
         try {configureDatabase();}
@@ -41,15 +37,16 @@ public class SQLDataAccess implements DataAccess {
         catch(Exception e){System.out.println(e.getMessage());}
     }
     @Override
-    public void addUser(UserData user) {
+    public void addUser(UserData user) throws DataAccessException {
         var statement = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
         String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         try{executeUpdate(statement, user.username(), user.email(), hash);}
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){System.out.println(e.getMessage());}
     }
 
     @Override
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT username, email, password FROM users WHERE username = ?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -61,6 +58,7 @@ public class SQLDataAccess implements DataAccess {
                 }
             }
         }
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){
             System.out.println(e.getMessage());
             return null;
@@ -82,7 +80,7 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public AuthData getAuthData(String authToken) {
+    public AuthData getAuthData(String authToken) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT authToken, username FROM auth WHERE authToken = ?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -94,6 +92,7 @@ public class SQLDataAccess implements DataAccess {
                 }
             }
         }
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){
             System.out.println(e.getMessage());
             return null;
@@ -108,14 +107,15 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public void removeAuthData(String authToken) {
+    public void removeAuthData(String authToken) throws DataAccessException {
         var userDeleteStatement = "DELETE FROM auth WHERE authToken = ?";
         try{executeUpdate(userDeleteStatement, authToken);}
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){System.out.println(e.getMessage());}
     }
 
     @Override
-    public GameData[] getGameDataList(){
+    public GameData[] getGameDataList() throws DataAccessException {
         GameData[] returnList = new GameData[getGameCount()];
         int i = 0;
         try (var conn = DatabaseManager.getConnection()) {
@@ -130,6 +130,7 @@ public class SQLDataAccess implements DataAccess {
             }
             return returnList;
         }
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){
             System.out.println(e.getMessage());
             return null;
@@ -139,7 +140,7 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public Integer getGameCount() {
+    public Integer getGameCount() throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT COUNT(*) FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -150,6 +151,7 @@ public class SQLDataAccess implements DataAccess {
                 }
             }
         }
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){
             System.out.println(e.getMessage());
             return null;
@@ -158,18 +160,19 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public int addGame(GameData gameData){
+    public int addGame(GameData gameData) throws DataAccessException {
         var statement = "INSERT INTO game (whiteusername, blackusername, gamename, game) VALUES (?, ?, ?, ?)";
         String json = new Gson().toJson(gameData.game());
         try{
             return executeUpdate(statement, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), json);
         }
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){System.out.println(e.getMessage());}
         return 0;
     }
 
     @Override
-    public GameData getGame(Integer gameID){
+    public GameData getGame(Integer gameID) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
             var statement = "SELECT gameid, whiteusername, blackusername, gamename, game FROM game WHERE gameid = ?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -181,6 +184,7 @@ public class SQLDataAccess implements DataAccess {
                 }
             }
         }
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){
             System.out.println(e.getMessage());
             return null;
@@ -223,27 +227,30 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public void addPlayer(Integer gameID, String username, String playerColor){
+    public void addPlayer(Integer gameID, String username, String playerColor) throws DataAccessException {
         if (playerColor.equals("BLACK"))
         {
             var statement = "UPDATE game SET blackusername = ? WHERE gameid = ?";
             try{executeUpdate(statement, username, gameID);}
+            catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
             catch(Exception e){System.out.println(e.getMessage());}
         }
         if (playerColor.equals("WHITE"))
         {
             var statement = "UPDATE game SET whiteusername = ? WHERE gameid = ?";
             try{executeUpdate(statement, username, gameID);}
+            catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
             catch(Exception e){System.out.println(e.getMessage());}
         }
     }
     @Override
-    public void updateGame(Integer gameID, GameData game){
+    public void updateGame(Integer gameID, GameData game) throws DataAccessException {
         var statement = "UPDATE game SET game = ? WHERE gameid = ?";
         try{
             String json = new Gson().toJson(game.game());
             executeUpdate(statement, json, gameID);
         }
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){System.out.println(e.getMessage());}
     }
 

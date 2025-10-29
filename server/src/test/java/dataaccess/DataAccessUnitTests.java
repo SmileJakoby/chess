@@ -34,38 +34,46 @@ public class DataAccessUnitTests {
     @Order(1)
     @DisplayName("Clear Positive")
     public void clearPositive() {
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
-        dataAccess.addUser(user1);
-        dataAccess.addUser(user2);
-        AuthData auth1 = new AuthData("qwerty", "Jacob");
-        AuthData auth2 = new AuthData("asdf", "Luke");
-        dataAccess.addAuthData(auth1);
-        dataAccess.addAuthData(auth2);
-        GameData game1 = new GameData(null,"Jacob","Luke","1v1 me bro",new ChessGame());
-        GameData game2 = new GameData(null,"Jacob","Luke","Rematch",new ChessGame());
-        int gameID1 = dataAccess.addGame(game1);
-        int gameID2 = dataAccess.addGame(game2);
-        Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(),
-                "dataAccess failed, couldn't add user");
-        Assertions.assertEquals(user2.username(), dataAccess.getUser(user2.username()).username(),
-                "dataAccess failed, couldn't add user");
-        Assertions.assertEquals(auth1.authToken(), dataAccess.getAuthData(auth1.authToken()).authToken(),
-                "dataAccess failed, couldn't add auth");
-        Assertions.assertEquals(auth2.authToken(), dataAccess.getAuthData(auth2.authToken()).authToken(),
-                "dataAccess failed, couldn't add auth");
-        Assertions.assertEquals(gameID1, dataAccess.getGame(gameID1).gameID(),
-                "dataAccess failed, couldn't add game");
-        Assertions.assertEquals(gameID2, dataAccess.getGame(gameID2).gameID(),
-                "dataAccess failed, couldn't add game");
-        try{databaseService.clear();}
-        catch(Exception ex){Assertions.fail(ex.getMessage());}
-        Assertions.assertNull(dataAccess.getUser(user1.username()));
-        Assertions.assertNull(dataAccess.getUser(user2.username()));
-        Assertions.assertNull(dataAccess.getAuthData(auth1.authToken()));
-        Assertions.assertNull(dataAccess.getAuthData(auth2.authToken()));
-        Assertions.assertNull(dataAccess.getGame(gameID1));
-        Assertions.assertNull(dataAccess.getGame(gameID2));
+        try {
+            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+            UserData user2 = new UserData("Luke", "luke@gmail.com", "98765");
+            dataAccess.addUser(user1);
+            dataAccess.addUser(user2);
+            AuthData auth1 = new AuthData("qwerty", "Jacob");
+            AuthData auth2 = new AuthData("asdf", "Luke");
+            dataAccess.addAuthData(auth1);
+            dataAccess.addAuthData(auth2);
+            GameData game1 = new GameData(null, "Jacob", "Luke", "1v1 me bro", new ChessGame());
+            GameData game2 = new GameData(null, "Jacob", "Luke", "Rematch", new ChessGame());
+            int gameID1 = dataAccess.addGame(game1);
+            int gameID2 = dataAccess.addGame(game2);
+            Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(),
+                    "dataAccess failed, couldn't add user");
+            Assertions.assertEquals(user2.username(), dataAccess.getUser(user2.username()).username(),
+                    "dataAccess failed, couldn't add user");
+            Assertions.assertEquals(auth1.authToken(), dataAccess.getAuthData(auth1.authToken()).authToken(),
+                    "dataAccess failed, couldn't add auth");
+            Assertions.assertEquals(auth2.authToken(), dataAccess.getAuthData(auth2.authToken()).authToken(),
+                    "dataAccess failed, couldn't add auth");
+            Assertions.assertEquals(gameID1, dataAccess.getGame(gameID1).gameID(),
+                    "dataAccess failed, couldn't add game");
+            Assertions.assertEquals(gameID2, dataAccess.getGame(gameID2).gameID(),
+                    "dataAccess failed, couldn't add game");
+            try {
+                databaseService.clear();
+            } catch (Exception ex) {
+                Assertions.fail(ex.getMessage());
+            }
+            Assertions.assertNull(dataAccess.getUser(user1.username()));
+            Assertions.assertNull(dataAccess.getUser(user2.username()));
+            Assertions.assertNull(dataAccess.getAuthData(auth1.authToken()));
+            Assertions.assertNull(dataAccess.getAuthData(auth2.authToken()));
+            Assertions.assertNull(dataAccess.getGame(gameID1));
+            Assertions.assertNull(dataAccess.getGame(gameID2));
+        }
+        catch (DataAccessException ex) {
+            Assertions.fail(ex.getMessage());
+        }
     }
     @Test
     @Order(2)
@@ -101,12 +109,17 @@ public class DataAccessUnitTests {
     @Order(5)
     @DisplayName("Login Negative")
     public void loginNegative() {
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        dataAccess.addUser(user1);
-        Assertions.assertThrows(UnauthorizedException.class, () -> {
+        try {
+            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+            dataAccess.addUser(user1);
+            Assertions.assertThrows(UnauthorizedException.class, () -> {
                 UserData badLogin = new UserData("Jacob", "jacobskarda@gmail.com", "Totally my password");
                 sessionService.login(badLogin);
-        });
+            });
+        }
+        catch (DataAccessException ex) {
+            Assertions.fail(ex.getMessage());
+        }
     }
 
     @Test
@@ -125,10 +138,17 @@ public class DataAccessUnitTests {
     @Order(7)
     @DisplayName("Logout Negative")
     public void logoutNegative() {
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        dataAccess.addUser(user1);
-        AuthData auth1 = new AuthData("qwerty", "Jacob");
-        Assertions.assertThrows(UnauthorizedException.class, () -> {sessionService.logout(auth1);});
+        try {
+            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+            dataAccess.addUser(user1);
+            AuthData auth1 = new AuthData("qwerty", "Jacob");
+            Assertions.assertThrows(UnauthorizedException.class, () -> {
+                sessionService.logout(auth1);
+            });
+        }
+        catch (DataAccessException ex) {
+            Assertions.fail(ex.getMessage());
+        }
     }
 
     @Test
@@ -155,16 +175,23 @@ public class DataAccessUnitTests {
     @Order(9)
     @DisplayName("List Games Negative")
     public void listGamesNegative() {
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
-        dataAccess.addUser(user1);
-        dataAccess.addUser(user2);
-        AuthData auth1 = new AuthData("I am not authorized", "Jacob");
-        GameData game1 = new GameData(1,"Jacob","Luke","1v1 me bro",new ChessGame());
-        GameData game2 = new GameData(2,"Jacob","Luke","Rematch",new ChessGame());
-        dataAccess.addGame(game1);
-        dataAccess.addGame(game2);
-        Assertions.assertThrows(UnauthorizedException.class, () -> {gameService.getGamesList(auth1);});
+        try {
+            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+            UserData user2 = new UserData("Luke", "luke@gmail.com", "98765");
+            dataAccess.addUser(user1);
+            dataAccess.addUser(user2);
+            AuthData auth1 = new AuthData("I am not authorized", "Jacob");
+            GameData game1 = new GameData(1, "Jacob", "Luke", "1v1 me bro", new ChessGame());
+            GameData game2 = new GameData(2, "Jacob", "Luke", "Rematch", new ChessGame());
+            dataAccess.addGame(game1);
+            dataAccess.addGame(game2);
+            Assertions.assertThrows(UnauthorizedException.class, () -> {
+                gameService.getGamesList(auth1);
+            });
+        }
+        catch (DataAccessException ex) {
+            Assertions.fail(ex.getMessage());
+        }
     }
 
     @Test
@@ -186,10 +213,17 @@ public class DataAccessUnitTests {
     @Order(11)
     @DisplayName("Create Game Negative")
     public void createGameNegative() {
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        dataAccess.addUser(user1);
-        AuthData auth1 = new AuthData("I am not authorized", "Jacob");
-        Assertions.assertThrows(UnauthorizedException.class, () -> {gameService.createGame(auth1, "illegal game");});
+        try {
+            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+            dataAccess.addUser(user1);
+            AuthData auth1 = new AuthData("I am not authorized", "Jacob");
+            Assertions.assertThrows(UnauthorizedException.class, () -> {
+                gameService.createGame(auth1, "illegal game");
+            });
+        }
+        catch (DataAccessException ex) {
+            Assertions.fail(ex.getMessage());
+        }
     }
 
     @Test
@@ -214,17 +248,24 @@ public class DataAccessUnitTests {
     @Order(13)
     @DisplayName("Join Game Negative")
     public void joinGameNegative() {
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
-        dataAccess.addUser(user1);
-        dataAccess.addUser(user2);
-        AuthData auth1 = new AuthData("qwerty", "Jacob");
-        AuthData auth2 = new AuthData("asdf", "Luke");
-        dataAccess.addAuthData(auth1);
-        dataAccess.addAuthData(auth2);
-        GameData game1 = new GameData(null,"Jacob",null,"1v1 me bro",new ChessGame());
-        int game1ID = dataAccess.addGame(game1);
-        Assertions.assertThrows(AlreadyTakenException.class, () -> {gameService.joinGame(auth1, "WHITE", game1ID);});
+        try {
+            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+            UserData user2 = new UserData("Luke", "luke@gmail.com", "98765");
+            dataAccess.addUser(user1);
+            dataAccess.addUser(user2);
+            AuthData auth1 = new AuthData("qwerty", "Jacob");
+            AuthData auth2 = new AuthData("asdf", "Luke");
+            dataAccess.addAuthData(auth1);
+            dataAccess.addAuthData(auth2);
+            GameData game1 = new GameData(null, "Jacob", null, "1v1 me bro", new ChessGame());
+            int game1ID = dataAccess.addGame(game1);
+            Assertions.assertThrows(AlreadyTakenException.class, () -> {
+                gameService.joinGame(auth1, "WHITE", game1ID);
+            });
+        }
+        catch (DataAccessException ex) {
+            Assertions.fail(ex.getMessage());
+        }
     }
 
     @Test

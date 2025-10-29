@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import datamodel.LoginResponse;
 import model.AuthData;
 import model.UserData;
@@ -14,7 +15,7 @@ public class SessionService {
         this.dataAccess = dataAccess;
     }
 
-    public LoginResponse login(UserData user) throws BadRequestException, UnauthorizedException {
+    public LoginResponse login(UserData user) throws BadRequestException, UnauthorizedException, DataAccessException {
 
         if (user.password() == null || user.username() == null) {
             throw new BadRequestException("bad request");
@@ -26,7 +27,12 @@ public class SessionService {
         {
             if (!dataAccess.getUser(user.username()).password().equals(user.password())) {
                 //String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
-                if (!BCrypt.checkpw(user.password(), dataAccess.getUser(user.username()).password())) {
+                try{
+                    if (!BCrypt.checkpw(user.password(), dataAccess.getUser(user.username()).password())) {
+                        throw new UnauthorizedException("unauthorized");
+                    }
+                }
+                catch(IllegalArgumentException e){
                     throw new UnauthorizedException("unauthorized");
                 }
             }
@@ -36,7 +42,7 @@ public class SessionService {
         dataAccess.addAuthData(newAuthData);
         return new LoginResponse(user.username(), authToken);
     }
-    public void logout(AuthData givenAuth) throws UnauthorizedException {
+    public void logout(AuthData givenAuth) throws UnauthorizedException, DataAccessException  {
         if (dataAccess.getAuthData(givenAuth.authToken()) == null)
         {
             throw new UnauthorizedException("unauthorized");
