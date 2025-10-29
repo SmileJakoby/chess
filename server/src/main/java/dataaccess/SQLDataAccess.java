@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
@@ -41,8 +40,12 @@ public class SQLDataAccess implements DataAccess {
         var statement = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
         String hash = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         try{executeUpdate(statement, user.username(), user.email(), hash);}
-        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
-        catch(Exception e){System.out.println(e.getMessage());}
+        catch(DataAccessException ex){
+            throw new DataAccessException(ex.getMessage(), ex);
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
@@ -73,10 +76,10 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public void addAuthData(AuthData authData) {
+    public void addAuthData(AuthData authData) throws DataAccessException {
         var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
         try{executeUpdate(statement, authData.authToken(), authData.username());}
-        catch(Exception e){System.out.println(e.getMessage());}
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
     }
 
     @Override

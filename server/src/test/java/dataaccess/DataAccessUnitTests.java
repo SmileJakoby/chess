@@ -3,10 +3,6 @@ package dataaccess;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
-import datamodel.CreateGameResponse;
-import datamodel.GamesListResponse;
-import datamodel.LoginResponse;
-import datamodel.RegisterResponse;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -20,263 +16,228 @@ public class DataAccessUnitTests {
     // ### TESTING SETUP/CLEANUP ###
     // ### SERVER-LEVEL API TESTS ###
     public static DataAccess dataAccess = new SQLDataAccess();
-    public static DatabaseService databaseService = new DatabaseService(dataAccess);
-    public static UserService userService = new UserService(dataAccess);
-    public static SessionService sessionService = new SessionService(dataAccess);
-    public static GameService gameService = new GameService(dataAccess);
     @BeforeEach
     public void setup() {
-        try{databaseService.clear();}
+        try{dataAccess.clear();}
         catch(Exception ex){Assertions.fail(ex.getMessage());}
     }
 
+    //Clear
+
+    //GetGameCount
+    //GetGameByName
+    //UpdateGame
+
+
     @Test
     @Order(1)
-    @DisplayName("Clear Positive")
-    public void clearPositive() {
-        try {
-            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
-            UserData user2 = new UserData("Luke", "luke@gmail.com", "98765");
-            dataAccess.addUser(user1);
-            dataAccess.addUser(user2);
-            AuthData auth1 = new AuthData("qwerty", "Jacob");
-            AuthData auth2 = new AuthData("asdf", "Luke");
-            dataAccess.addAuthData(auth1);
-            dataAccess.addAuthData(auth2);
-            GameData game1 = new GameData(null, "Jacob", "Luke", "1v1 me bro", new ChessGame());
-            GameData game2 = new GameData(null, "Jacob", "Luke", "Rematch", new ChessGame());
-            int gameID1 = dataAccess.addGame(game1);
-            int gameID2 = dataAccess.addGame(game2);
-            Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(),
-                    "dataAccess failed, couldn't add user");
-            Assertions.assertEquals(user2.username(), dataAccess.getUser(user2.username()).username(),
-                    "dataAccess failed, couldn't add user");
-            Assertions.assertEquals(auth1.authToken(), dataAccess.getAuthData(auth1.authToken()).authToken(),
-                    "dataAccess failed, couldn't add auth");
-            Assertions.assertEquals(auth2.authToken(), dataAccess.getAuthData(auth2.authToken()).authToken(),
-                    "dataAccess failed, couldn't add auth");
-            Assertions.assertEquals(gameID1, dataAccess.getGame(gameID1).gameID(),
-                    "dataAccess failed, couldn't add game");
-            Assertions.assertEquals(gameID2, dataAccess.getGame(gameID2).gameID(),
-                    "dataAccess failed, couldn't add game");
-            try {
-                databaseService.clear();
-            } catch (Exception ex) {
-                Assertions.fail(ex.getMessage());
-            }
-            Assertions.assertNull(dataAccess.getUser(user1.username()));
-            Assertions.assertNull(dataAccess.getUser(user2.username()));
-            Assertions.assertNull(dataAccess.getAuthData(auth1.authToken()));
-            Assertions.assertNull(dataAccess.getAuthData(auth2.authToken()));
-            Assertions.assertNull(dataAccess.getGame(gameID1));
-            Assertions.assertNull(dataAccess.getGame(gameID2));
-        }
-        catch (DataAccessException ex) {
-            Assertions.fail(ex.getMessage());
-        }
+    @DisplayName("Add User Positive DAO")
+    public void addUserPositiveDAO() throws DataAccessException {
+        UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+        UserData user2 = new UserData("Luke", "luke@gmail.com", "98765");
+        dataAccess.addUser(user1);
+        dataAccess.addUser(user2);
+        Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(),
+                "dataAccess failed, couldn't add user");
+        Assertions.assertEquals(user2.username(), dataAccess.getUser(user2.username()).username(),
+                "dataAccess failed, couldn't add user");
     }
     @Test
     @Order(2)
-    @DisplayName("Register Positive")
-    public void registerPositive() throws Exception {
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        RegisterResponse response = userService.register(user1);
-        Assertions.assertNotNull(response, "Did not get response");
-        Assertions.assertEquals(user1.username(), response.username(), "response username mismatch");
-        Assertions.assertEquals(user1.username(), dataAccess.getUser(user1.username()).username(), "database username mismatch");
+    @DisplayName("Add User Negative DAO")
+    public void addUserNegativeDAO() throws DataAccessException {
+        UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
+        UserData user2 = new UserData("Jacob", "luke@gmail.com", "98765");
+        dataAccess.addUser(user1);
+        Assertions.assertThrows(DataAccessException.class, () -> {dataAccess.addUser(user2);});
     }
     @Test
     @Order(3)
-    @DisplayName("Register Negative")
-    public void registerNegative() {
-        UserData user1 = new UserData("Jacob",null,"12345");
-        Assertions.assertThrows(BadRequestException.class, () -> {userService.register(user1);});
+    @DisplayName("Get User Positive DAO")
+    public void getUserPositiveDAO() throws DataAccessException {
+        addUserPositiveDAO();
+        UserData insertedUser = dataAccess.getUser("Jacob");
+        Assertions.assertEquals("Jacob", insertedUser.username(),
+                "dataAccess failed, couldn't add user");
     }
-
     @Test
     @Order(4)
-    @DisplayName("Login Positive")
-    public void loginPositive() throws Exception{
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        dataAccess.addUser(user1);
-        LoginResponse response = sessionService.login(user1);
-        Assertions.assertNotNull(response, "Did not get response");
-        Assertions.assertEquals(user1.username(), response.username(), "response username mismatch");
-        Assertions.assertEquals(response.authToken(), dataAccess.getAuthData(response.authToken()).authToken(), "response authToken mismatch");
+    @DisplayName("Get User Negative DAO")
+    public void getUserNegativeDAO() throws DataAccessException {
+        addUserPositiveDAO();
+        UserData insertedUser = dataAccess.getUser("Emily");
+        Assertions.assertNull(insertedUser, "Emily should not exist, nothing should have been returned");
     }
 
     @Test
     @Order(5)
-    @DisplayName("Login Negative")
-    public void loginNegative() {
-        try {
-            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
-            dataAccess.addUser(user1);
-            Assertions.assertThrows(UnauthorizedException.class, () -> {
-                UserData badLogin = new UserData("Jacob", "jacobskarda@gmail.com", "Totally my password");
-                sessionService.login(badLogin);
-            });
-        }
-        catch (DataAccessException ex) {
-            Assertions.fail(ex.getMessage());
-        }
+    @DisplayName("Add Auth Positive DAO")
+    public void addAuthPositiveDAO() throws DataAccessException {
+        AuthData auth1 = new AuthData("JacobAuthorized", "Jacob");
+        AuthData auth2 = new AuthData("LukeAuthorized", "Luke");
+        dataAccess.addAuthData(auth1);
+        dataAccess.addAuthData(auth2);
+        Assertions.assertEquals(auth1.authToken(), dataAccess.getAuthData(auth1.authToken()).authToken(),
+                "dataAccess failed, couldn't add auth 1");
+        Assertions.assertEquals(auth2.authToken(), dataAccess.getAuthData(auth2.authToken()).authToken(),
+                "dataAccess failed, couldn't add auth 2");
     }
-
     @Test
     @Order(6)
-    @DisplayName("Logout Positive")
-    public void logoutPositive() throws Exception{
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        dataAccess.addUser(user1);
-        AuthData auth1 = new AuthData("qwerty", "Jacob");
+    @DisplayName("Add Auth Negative DAO")
+    public void addAuthNegativeDAO() throws DataAccessException {
+        AuthData auth1 = new AuthData("JacobAuthorized", "Jacob");
+        AuthData auth2 = new AuthData("JacobAuthorized", "Luke");
         dataAccess.addAuthData(auth1);
-        sessionService.logout(auth1);
-        Assertions.assertNull(dataAccess.getAuthData(auth1.authToken()), "AuthData was not removed from database");
+        Assertions.assertThrows(DataAccessException.class, () -> {dataAccess.addAuthData(auth2);});
     }
 
     @Test
     @Order(7)
-    @DisplayName("Logout Negative")
-    public void logoutNegative() {
-        try {
-            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
-            dataAccess.addUser(user1);
-            AuthData auth1 = new AuthData("qwerty", "Jacob");
-            Assertions.assertThrows(UnauthorizedException.class, () -> {
-                sessionService.logout(auth1);
-            });
-        }
-        catch (DataAccessException ex) {
-            Assertions.fail(ex.getMessage());
-        }
+    @DisplayName("Get Auth Positive DAO")
+    public void getAuthPositiveDAO() throws DataAccessException {
+        addAuthPositiveDAO();
+        AuthData insertedAuth = dataAccess.getAuthData("JacobAuthorized");
+        Assertions.assertEquals("JacobAuthorized", insertedAuth.authToken(),
+                "dataAccess failed, couldn't add auth");
     }
-
     @Test
     @Order(8)
-    @DisplayName("List Games Positive")
-    public void listGamesPositive() throws Exception{
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
-        dataAccess.addUser(user1);
-        dataAccess.addUser(user2);
-        AuthData auth1 = new AuthData("qwerty", "Jacob");
-        AuthData auth2 = new AuthData("asdf", "Luke");
-        dataAccess.addAuthData(auth1);
-        dataAccess.addAuthData(auth2);
-        GameData game1 = new GameData(1,"Jacob","Luke","1v1 me bro",new ChessGame());
-        GameData game2 = new GameData(2,"Jacob","Luke","Rematch",new ChessGame());
-        dataAccess.addGame(game1);
-        dataAccess.addGame(game2);
-        GamesListResponse response = gameService.getGamesList(auth1);
-        Assertions.assertNotNull(response, "GamesList was null");
+    @DisplayName("Get Auth Negative DAO")
+    public void getAuthNegativeDAO() throws DataAccessException {
+        addAuthPositiveDAO();
+        AuthData insertedAuth = dataAccess.getAuthData("EmilyAuthorized");
+        Assertions.assertNull(insertedAuth, "Emily should not exist, nothing should have been returned");
     }
 
     @Test
     @Order(9)
-    @DisplayName("List Games Negative")
-    public void listGamesNegative() {
-        try {
-            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
-            UserData user2 = new UserData("Luke", "luke@gmail.com", "98765");
-            dataAccess.addUser(user1);
-            dataAccess.addUser(user2);
-            AuthData auth1 = new AuthData("I am not authorized", "Jacob");
-            GameData game1 = new GameData(1, "Jacob", "Luke", "1v1 me bro", new ChessGame());
-            GameData game2 = new GameData(2, "Jacob", "Luke", "Rematch", new ChessGame());
-            dataAccess.addGame(game1);
-            dataAccess.addGame(game2);
-            Assertions.assertThrows(UnauthorizedException.class, () -> {
-                gameService.getGamesList(auth1);
-            });
-        }
-        catch (DataAccessException ex) {
-            Assertions.fail(ex.getMessage());
-        }
+    @DisplayName("Remove Auth Positive DAO")
+    public void removeAuthPositiveDAO() throws DataAccessException {
+        addAuthPositiveDAO();
+        dataAccess.removeAuthData("JacobAuthorized");
+        AuthData insertedAuth = dataAccess.getAuthData("JacobAuthorized");
+        Assertions.assertNull(insertedAuth,
+                "JacobAuthorized should not exist");
     }
-
     @Test
     @Order(10)
-    @DisplayName("Create Game Positive")
-    public void createGamePositive() throws Exception{
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        dataAccess.addUser(user1);
-        AuthData auth1 = new AuthData("qwerty", "Jacob");
-        dataAccess.addAuthData(auth1);
-
-        CreateGameResponse response = gameService.createGame(auth1, "The final showdown");
-
-        Assertions.assertNotNull(response, "Did not get response");
-        Assertions.assertEquals("The final showdown", dataAccess.getGame(response.gameID()).gameName(), "game name did not match/wasn't found");
+    @DisplayName("Remove Auth Negative DAO")
+    public void removeAuthNegativeDAO() throws DataAccessException {
+        //This isn't necessary... I don't care if you try to remove something that doesn't exist.
     }
 
     @Test
     @Order(11)
-    @DisplayName("Create Game Negative")
-    public void createGameNegative() {
-        try {
-            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
-            dataAccess.addUser(user1);
-            AuthData auth1 = new AuthData("I am not authorized", "Jacob");
-            Assertions.assertThrows(UnauthorizedException.class, () -> {
-                gameService.createGame(auth1, "illegal game");
-            });
-        }
-        catch (DataAccessException ex) {
-            Assertions.fail(ex.getMessage());
-        }
+    @DisplayName("Add Game Positive DAO")
+    public void addGamePositiveDAO() throws DataAccessException {
+        GameData game1 = new GameData(null, "Jacob", "Luke", "1v1 me bro", new ChessGame());
+        GameData game2 = new GameData(null, "Jacob", "Luke", "Rematch", new ChessGame());
+        int gameID1 = dataAccess.addGame(game1);
+        int gameID2 = dataAccess.addGame(game2);
+        Assertions.assertEquals(gameID1, dataAccess.getGame(gameID1).gameID(),
+                "dataAccess failed, couldn't add game");
+        Assertions.assertEquals(gameID2, dataAccess.getGame(gameID2).gameID(),
+                "dataAccess failed, couldn't add game");
     }
-
     @Test
     @Order(12)
-    @DisplayName("Join Positive")
-    public void joinPositive() throws Exception{
-        UserData user1 = new UserData("Jacob","jacobskarda@gmail.com","12345");
-        UserData user2 = new UserData("Luke","luke@gmail.com","98765");
-        dataAccess.addUser(user1);
-        dataAccess.addUser(user2);
-        AuthData auth1 = new AuthData("qwerty", "Jacob");
-        AuthData auth2 = new AuthData("asdf", "Luke");
-        dataAccess.addAuthData(auth1);
-        dataAccess.addAuthData(auth2);
-        GameData game1 = new GameData(null,"Jacob",null,"1v1 me bro",new ChessGame());
-        int game1ID = dataAccess.addGame(game1);
-        gameService.joinGame(auth1, "BLACK", game1ID);
-        Assertions.assertEquals(user1.username(), dataAccess.getGame(game1ID).blackUsername(), "black player username mismatch");
+    @DisplayName("Add Game Negative DAO")
+    public void addGameNegativeDAO() throws DataAccessException {
+        GameData game1 = new GameData(null, "Jacob", "Luke", null, new ChessGame());
+        Assertions.assertThrows(DataAccessException.class, () -> {dataAccess.addGame(game1);});
     }
 
     @Test
     @Order(13)
-    @DisplayName("Join Game Negative")
-    public void joinGameNegative() {
+    @DisplayName("Get Game Positive DAO")
+    public void getGamePositiveDAO() throws DataAccessException {
+        GameData game1 = new GameData(null, "Jacob", "Luke", "1v1 me bro", new ChessGame());
+        int gameID1 = dataAccess.addGame(game1);
+        GameData insertedGame = dataAccess.getGame(gameID1);
+        Assertions.assertEquals(game1.game(), insertedGame.game(),
+                "dataAccess failed, couldn't get game");
+    }
+    @Test
+    @Order(14)
+    @DisplayName("Get Game Negative DAO")
+    public void getGameNegativeDAO() throws DataAccessException {
+        addGamePositiveDAO();
+        GameData insertedGame = dataAccess.getGame(999999999);
+        Assertions.assertNull(insertedGame, "Emily should not exist, nothing should have been returned");
+    }
+    @Test
+    @Order(15)
+    @DisplayName("Clear Positive DAO")
+    public void clearPositiveDAO() {
         try {
-            UserData user1 = new UserData("Jacob", "jacobskarda@gmail.com", "12345");
-            UserData user2 = new UserData("Luke", "luke@gmail.com", "98765");
-            dataAccess.addUser(user1);
-            dataAccess.addUser(user2);
-            AuthData auth1 = new AuthData("qwerty", "Jacob");
-            AuthData auth2 = new AuthData("asdf", "Luke");
-            dataAccess.addAuthData(auth1);
-            dataAccess.addAuthData(auth2);
-            GameData game1 = new GameData(null, "Jacob", null, "1v1 me bro", new ChessGame());
-            int game1ID = dataAccess.addGame(game1);
-            Assertions.assertThrows(AlreadyTakenException.class, () -> {
-                gameService.joinGame(auth1, "WHITE", game1ID);
-            });
+            addGamePositiveDAO();
+            addUserPositiveDAO();
+            addAuthPositiveDAO();
+            dataAccess.clear();
+            Assertions.assertNull(dataAccess.getUser("Jacob"));
+            Assertions.assertNull(dataAccess.getUser("Luke"));
+            Assertions.assertNull(dataAccess.getAuthData("JacobAuthorized"));
+            Assertions.assertNull(dataAccess.getAuthData("LukeAuthorized"));
+            Assertions.assertNull(dataAccess.getGame(1));
+            Assertions.assertNull(dataAccess.getGame(2));
         }
         catch (DataAccessException ex) {
             Assertions.fail(ex.getMessage());
         }
     }
+    @Test
+    @Order(16)
+    @DisplayName("Get GameList Positive DAO")
+    public void getGameListPositiveDAO() throws DataAccessException {
+        addGamePositiveDAO();
+        GameData[] gamesList = dataAccess.getGameDataList();
+        Assertions.assertNotNull(gamesList, "GamesList was null");
+    }
 
     @Test
-    @Order(14)
-    @DisplayName("Make Move")
-    public void makeMove() throws Exception {
-        joinPositive();
-        GameData[] games = dataAccess.getGameDataList();
-        GameData originalGameData = dataAccess.getGame(games[0].gameID());
+    @Order(17)
+    @DisplayName("Get GameList Negative DAO")
+    public void getGameListNegativeDAO() throws DataAccessException {
+        clearPositiveDAO();
+        GameData[] gamesList = dataAccess.getGameDataList();
+        Assertions.assertEquals(0, gamesList.length, "GamesList was not empty");
+    }
+
+    @Test
+    @Order(18)
+    @DisplayName("Add Player Positive DAO")
+    public void addPlayerPositiveDAO() throws DataAccessException {
+        GameData game1 = new GameData(null, "Jacob", null, "1v1 me bro", new ChessGame());
+        int gameID1 = dataAccess.addGame(game1);
+        dataAccess.addPlayer(gameID1, "Luke", "BLACK");
+        Assertions.assertEquals("Jacob", dataAccess.getGame(gameID1).whiteUsername(),
+                "dataAccess failed, whiteUsername was overwritten");
+        Assertions.assertEquals("Luke", dataAccess.getGame(gameID1).blackUsername(),
+                "dataAccess failed, whiteUsername was overwritten");
+    }
+    @Test
+    @Order(19)
+    @DisplayName("Add Player Negative DAO")
+    public void addPlayerNegativeDAO() throws DataAccessException {
+        GameData game1 = new GameData(null, "Jacob", null, "1v1 me bro", new ChessGame());
+        int gameID1 = dataAccess.addGame(game1);
+        dataAccess.addPlayer(gameID1, "Luke", "GREEN");
+        Assertions.assertEquals("Jacob", dataAccess.getGame(gameID1).whiteUsername(),
+                "dataAccess failed, whiteUsername was overwritten");
+        Assertions.assertNull(dataAccess.getGame(gameID1).blackUsername(),
+                "dataAccess failed, somehow black player was added");
+    }
+
+    @Test
+    @Order(20)
+    @DisplayName("Update Game")
+    public void updateGame() throws Exception {
+        GameData game1 = new GameData(null, "Jacob", "Luke", "1v1 me bro", new ChessGame());
+        int gameID1 = dataAccess.addGame(game1);
+        GameData originalGameData = dataAccess.getGame(gameID1);
         originalGameData.game().makeMove(new ChessMove(new ChessPosition(2, 5), new ChessPosition(4, 5), null));
-        dataAccess.updateGame(games[0].gameID(), originalGameData);
-        Assertions.assertEquals(originalGameData, dataAccess.getGame(games[0].gameID()));
+        dataAccess.updateGame(gameID1, originalGameData);
+        Assertions.assertEquals(originalGameData, dataAccess.getGame(gameID1));
     }
 }

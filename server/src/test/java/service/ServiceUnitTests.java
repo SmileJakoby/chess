@@ -1,8 +1,6 @@
 package service;
 
 import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
@@ -201,9 +199,7 @@ public class ServiceUnitTests {
         dataAccess.addUser(user1);
         AuthData auth1 = new AuthData("qwerty", "Jacob");
         dataAccess.addAuthData(auth1);
-
         CreateGameResponse response = gameService.createGame(auth1, "The final showdown");
-
         Assertions.assertNotNull(response, "Did not get response");
         Assertions.assertEquals("The final showdown", dataAccess.getGame(response.gameID()).gameName(), "game name did not match/wasn't found");
     }
@@ -265,16 +261,5 @@ public class ServiceUnitTests {
         catch (DataAccessException ex) {
             Assertions.fail(ex.getMessage());
         }
-    }
-
-    @Test
-    @Order(14)
-    @DisplayName("Make Move")
-    public void makeMove() throws Exception {
-        joinPositive();
-        GameData originalGameData = dataAccess.getGame(1);
-        originalGameData.game().makeMove(new ChessMove(new ChessPosition(2, 5), new ChessPosition(4, 5), null));
-        dataAccess.updateGame(1, originalGameData);
-        Assertions.assertEquals(originalGameData, dataAccess.getGame(1));
     }
 }
