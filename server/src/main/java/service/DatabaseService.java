@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import datamodel.RegisterResponse;
 import model.AuthData;
 import model.UserData;
@@ -13,7 +14,7 @@ public class DatabaseService {
         this.dataAccess = dataAccess;
     }
 
-    public void clear(){
+    public void clear() throws DataAccessException {
         dataAccess.clear();
     }
 }

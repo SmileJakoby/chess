@@ -3,6 +3,7 @@ package service;
 import chess.ChessGame;
 import dataaccess.DataAccess;
 
+import dataaccess.DataAccessException;
 import datamodel.CreateGameResponse;
 import datamodel.GameResponse;
 import datamodel.GamesListResponse;
@@ -35,21 +36,24 @@ public class GameService {
         return new GamesListResponse(returnList);
     }
 
-    public CreateGameResponse createGame(AuthData givenAuth, String gameName) throws UnauthorizedException, BadRequestException{
+    public CreateGameResponse createGame(AuthData givenAuth, String gameName) throws UnauthorizedException, BadRequestException, DataAccessException {
         if (dataAccess.getAuthData(givenAuth.authToken()) == null)
         {
             throw new UnauthorizedException("unauthorized");
         }
-        if (dataAccess.getGameByName(gameName) != null || gameName == null)
-        {
-            throw new BadRequestException("bad request");
+        try {
+            if (dataAccess.getGameByName(gameName) != null || gameName == null) {
+                throw new BadRequestException("bad request");
+            } else {
+                Integer gameID = dataAccess.getGameCount() + 1;
+                ChessGame newGame = new ChessGame();
+                GameData newGameData = new GameData(gameID, null, null, gameName, newGame);
+                int returnInt = dataAccess.addGame(newGameData);
+                return new CreateGameResponse(returnInt);
+            }
         }
-        else {
-            Integer gameID = dataAccess.getGameCount() + 1;
-            ChessGame newGame = new ChessGame();
-            GameData newGameData = new GameData(gameID, null, null, gameName, newGame);
-            int returnInt = dataAccess.addGame(newGameData);
-            return new CreateGameResponse(returnInt);
+        catch(DataAccessException e){
+            throw new DataAccessException(e.getMessage(), e);
         }
     }
 

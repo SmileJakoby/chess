@@ -1,6 +1,8 @@
 package dataaccess;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import datamodel.CreateGameResponse;
 import datamodel.GamesListResponse;
 import datamodel.LoginResponse;
@@ -24,7 +26,8 @@ public class DataAccessUnitTests {
     public static GameService gameService = new GameService(dataAccess);
     @BeforeEach
     public void setup() {
-        dataAccess.clear();
+        try{databaseService.clear();}
+        catch(Exception ex){Assertions.fail(ex.getMessage());}
     }
 
     @Test
@@ -55,7 +58,8 @@ public class DataAccessUnitTests {
                 "dataAccess failed, couldn't add game");
         Assertions.assertEquals(gameID2, dataAccess.getGame(gameID2).gameID(),
                 "dataAccess failed, couldn't add game");
-        databaseService.clear();
+        try{databaseService.clear();}
+        catch(Exception ex){Assertions.fail(ex.getMessage());}
         Assertions.assertNull(dataAccess.getUser(user1.username()));
         Assertions.assertNull(dataAccess.getUser(user2.username()));
         Assertions.assertNull(dataAccess.getAuthData(auth1.authToken()));
@@ -221,5 +225,17 @@ public class DataAccessUnitTests {
         GameData game1 = new GameData(null,"Jacob",null,"1v1 me bro",new ChessGame());
         int game1ID = dataAccess.addGame(game1);
         Assertions.assertThrows(AlreadyTakenException.class, () -> {gameService.joinGame(auth1, "WHITE", game1ID);});
+    }
+
+    @Test
+    @Order(14)
+    @DisplayName("Make Move")
+    public void makeMove() throws Exception {
+        joinPositive();
+        GameData[] games = dataAccess.getGameDataList();
+        GameData originalGameData = dataAccess.getGame(games[0].gameID());
+        originalGameData.game().makeMove(new ChessMove(new ChessPosition(2, 5), new ChessPosition(4, 5), null));
+        dataAccess.updateGame(games[0].gameID(), originalGameData);
+        Assertions.assertEquals(originalGameData, dataAccess.getGame(games[0].gameID()));
     }
 }

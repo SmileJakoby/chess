@@ -7,6 +7,7 @@ import model.GameData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
+import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,11 +28,12 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    public void clear(){
+    public void clear() throws DataAccessException {
         var userDeleteStatement = "DELETE FROM users";
         var authDeleteStatement = "DELETE FROM auth";
         var gameDeleteStatement = "DELETE FROM game";
         try{executeUpdate(userDeleteStatement);}
+        catch(DataAccessException ex){throw new DataAccessException(ex.getMessage(), ex);}
         catch(Exception e){System.out.println(e.getMessage());}
         try{executeUpdate(authDeleteStatement);}
         catch(Exception e){System.out.println(e.getMessage());}
@@ -187,13 +189,24 @@ public class SQLDataAccess implements DataAccess {
     }
 
     @Override
-    //TODO: SQL implementation of this
-    public GameData getGameByName(String gameName) {
-
-        for (HashMap.Entry<Integer, GameData> entry : gameMap.entrySet()){
-            if (entry.getValue().gameName().equals(gameName)) {
-                return entry.getValue();
+    public GameData getGameByName(String gameName) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT gameid, whiteusername, blackusername, gamename, game FROM game WHERE gamename = ?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, gameName);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readGameData(rs);
+                    }
+                }
             }
+        }
+        catch (DataAccessException e){
+            throw new DataAccessException(e.getMessage(), e);
+        }
+        catch(Exception e){
+            System.out.println(e.getMessage());
+            return null;
         }
         return null;
     }
@@ -226,9 +239,12 @@ public class SQLDataAccess implements DataAccess {
     }
     @Override
     public void updateGame(Integer gameID, GameData game){
-        //TODO: SQL implementation of this
-        gameMap.remove(gameID);
-        gameMap.put(gameID, game);
+        var statement = "UPDATE game SET game = ? WHERE gameid = ?";
+        try{
+            String json = new Gson().toJson(game.game());
+            executeUpdate(statement, json, gameID);
+        }
+        catch(Exception e){System.out.println(e.getMessage());}
     }
 
     private final String[] createStatements = {

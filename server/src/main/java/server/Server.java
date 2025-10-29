@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import dataaccess.SQLDataAccess;
 import datamodel.JoinGameRequest;
@@ -48,9 +49,15 @@ public class Server {
         server.stop();
     }
 
-    private void clear(Context ctx){
-        databaseService.clear();
-        ctx.result("{}");
+    private void clear(Context ctx) {
+        try {
+            databaseService.clear();
+            ctx.result("{}");
+        }
+        catch(DataAccessException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(500).result(errorMsg);
+        }
     }
     private void register(Context ctx){
         try {
@@ -130,6 +137,10 @@ public class Server {
             var createGameResponse = gameService.createGame(givenAuth, game.gameName());
 
             ctx.result(serializer.toJson(createGameResponse));
+        }
+        catch(DataAccessException ex){
+            var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
+            ctx.status(500).result(errorMsg);
         }
         catch(UnauthorizedException ex){
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());

@@ -9,7 +9,7 @@ import service.BadRequestException;
 public interface DataAccess {
     void addUser(UserData user);
     UserData getUser(String username);
-    void clear();
+    void clear() throws DataAccessException;
     void addAuthData(AuthData authData);
     AuthData getAuthData(String authToken);
     void removeAuthData(String authToken);
@@ -17,7 +17,7 @@ public interface DataAccess {
     int addGame(GameData gameData);
     GameData getGame(Integer gameID);
     void addPlayer(Integer gameID, String username, String playerColor);
-    GameData getGameByName(String gameName);
+    GameData getGameByName(String gameName) throws DataAccessException;
     Integer getGameCount();
     void updateGame(Integer gameID, GameData game);
 }
