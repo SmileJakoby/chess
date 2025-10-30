@@ -282,10 +282,10 @@ public class SQLDataAccess implements DataAccess {
                 )"""
     };
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
-        try (Connection conn = DatabaseManager.getConnection()) {
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
             //This was originally a try with resources statement. It made this too deeply nested, so... screw resource management!
             //try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-            PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS);
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
                     switch (param) {
