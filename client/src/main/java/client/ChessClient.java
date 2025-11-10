@@ -36,13 +36,18 @@ public class ChessClient {
 
         String result = "";
         while (!result.equals("quit")) {
-            System.out.print("[LOGGED OUT] >>> ");
+            if (authState == SIGNED_OUT) {
+                System.out.print("[SIGNED OUT] >>> ");
+            }
+            if (authState == SIGNED_IN) {
+                System.out.print("[SIGNED IN] >>> ");
+            }
             String line = inputScanner.nextLine();
             line = line.toLowerCase();
 
             try {
                 result = EvalCLI(line);
-                System.out.print(SET_TEXT_COLOR_YELLOW + result);
+                System.out.print(SET_TEXT_COLOR_YELLOW + result + "\n" + SET_TEXT_COLOR_WHITE);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
