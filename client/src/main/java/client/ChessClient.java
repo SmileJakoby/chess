@@ -1,11 +1,21 @@
-import chess.*;
+package client;
 
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-public class Main {
-    public static void main(String[] args) {
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class ChessClient {
+
+    private static String serverUrl = "";
+    public ChessClient(String givenServerUrl){
+        serverUrl = givenServerUrl;
+    }
+    public static void run() {
         Scanner inputScanner = new Scanner(System.in);
         System.out.println("♕ 240 Chess Client. Type 'help' to get started.");
         LoggedOutLoop(inputScanner);
@@ -34,6 +44,7 @@ public class Main {
                     break;
                 case "login":
                     System.out.println("Login not implemented yet");
+
                     break;
                 case "register":
                     System.out.println("Register not implemented yet");
