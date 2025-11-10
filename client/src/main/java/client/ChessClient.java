@@ -1,10 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
-import datamodel.CreateGameResponse;
-import datamodel.GameResponse;
-import datamodel.GamesListResponse;
-import datamodel.RegisterResponse;
+import datamodel.*;
 import model.GameData;
 import model.UserData;
 
@@ -89,7 +86,7 @@ public class ChessClient {
                 case "list":
                     return ListGames();
                 case "join":
-                    return "join game not implemented yet";
+                    return JoinGame(commands);
                 case "observe":
                     return "observe game not implemented yet";
             }
@@ -261,13 +258,21 @@ public class ChessClient {
                     var jsonBody = new Gson().toJson(gamesListResponse.games()[i]);
                     GameResponse gameResponse = new Gson().fromJson(jsonBody, GameResponse.class);
                     allGamesListStringBuilder
+                            .append(SET_TEXT_COLOR_YELLOW)
                             .append("#")
                             .append(i + 1)
-                            .append(": Name:")
+                            .append(": ")
+                            .append(SET_TEXT_COLOR_BLUE)
+                            .append("Name: ")
+                            .append(SET_TEXT_COLOR_MAGENTA)
                             .append(gameResponse.gameName())
+                            .append(SET_TEXT_COLOR_BLUE)
                             .append(" White:")
+                            .append(SET_TEXT_COLOR_MAGENTA)
                             .append(gameResponse.whiteUsername())
+                            .append(SET_TEXT_COLOR_BLUE)
                             .append(" Black:")
+                            .append(SET_TEXT_COLOR_MAGENTA)
                             .append(gameResponse.blackUsername())
                             .append("\n");
                     IDMap.put(i+1, gameResponse.gameID());
@@ -281,6 +286,37 @@ public class ChessClient {
         }
         catch (Exception e){
             return e.getMessage();
+        }
+    }
+
+    private static String JoinGame(String[] commands){
+        if (commands.length >= 3)
+            try{
+                Integer localGameID = Integer.parseInt(commands[1]);
+                Integer remoteGameID = IDMap.get(localGameID);
+                String playerColor = commands[2].toUpperCase();
+                JoinGameRequest newGame = new JoinGameRequest(playerColor, remoteGameID);
+                var jsonBody = new Gson().toJson(newGame);
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(new URI(serverUrl + "/game"))
+                        .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                        .header("Content-Type", "application/json")
+                        .header("authorization", myAuthToken)
+                        .build();
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                if (response.statusCode() == 200) {
+                    return "Joined game";
+                }
+                else{
+                    ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
+                    return errorMessage.message();
+                }
+            }
+            catch (Exception e){
+                return e.getMessage();
+            }
+        else{
+            return "Must provide a GameID and Color.";
         }
     }
 }
