@@ -8,7 +8,7 @@ import datamodel.RegisterResponse;
 import model.GameData;
 import model.UserData;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -33,7 +33,7 @@ public class ChessClient {
 
     private static int authState = LOGGED_OUT;
 
-    private static Map<Integer,Integer> IDMap;
+    private static final Map<Integer,Integer> IDMap = new HashMap<>();
 
     public ChessClient(String givenServerUrl){
         serverUrl = givenServerUrl;
@@ -256,11 +256,21 @@ public class ChessClient {
             if (response.statusCode() == 200) {
                 GamesListResponse gamesListResponse = new Gson().fromJson(response.body(), GamesListResponse.class);
                 StringBuilder allGamesListStringBuilder = new StringBuilder();
+                IDMap.clear();
                 for (int i = 0; i < gamesListResponse.games().length; i++) {
-
                     var jsonBody = new Gson().toJson(gamesListResponse.games()[i]);
                     GameResponse gameResponse = new Gson().fromJson(jsonBody, GameResponse.class);
-                    allGamesListStringBuilder.append(gameResponse.toString());
+                    allGamesListStringBuilder
+                            .append("#")
+                            .append(i + 1)
+                            .append(": Name:")
+                            .append(gameResponse.gameName())
+                            .append(" White:")
+                            .append(gameResponse.whiteUsername())
+                            .append(" Black:")
+                            .append(gameResponse.blackUsername())
+                            .append("\n");
+                    IDMap.put(i+1, gameResponse.gameID());
                 }
                 return allGamesListStringBuilder.toString();
             }
