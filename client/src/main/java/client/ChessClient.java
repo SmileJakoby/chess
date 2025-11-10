@@ -1,5 +1,9 @@
 package client;
 
+import com.google.gson.Gson;
+import datamodel.RegisterResponse;
+import model.UserData;
+
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -12,6 +16,9 @@ import java.net.http.HttpResponse;
 public class ChessClient {
 
     private static String serverUrl = "";
+
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
+
     public ChessClient(String givenServerUrl){
         serverUrl = givenServerUrl;
     }
@@ -28,9 +35,10 @@ public class ChessClient {
         boolean stayInLoop = true;
         while (stayInLoop){
             System.out.print("[LOGGED OUT] >>> ");
-            String command = inputScanner.nextLine();
-            command = command.toLowerCase();
-            switch (command) {
+            String completeCommand = inputScanner.nextLine();
+            completeCommand = completeCommand.toLowerCase();
+            var commands = completeCommand.split(" ");
+            switch (commands[0]) {
                 case "help":
                     System.out.println("  " + SET_TEXT_COLOR_BLUE + "register <USERNAME> <PASSWORD> <EMAIL>"
                             + SET_TEXT_COLOR_MAGENTA + " - Register a new account.");
@@ -44,10 +52,32 @@ public class ChessClient {
                     break;
                 case "login":
                     System.out.println("Login not implemented yet");
-
                     break;
                 case "register":
-                    System.out.println("Register not implemented yet");
+                    if (commands.length >= 4)
+                        try{
+                            UserData newUser = new UserData(commands[1], commands[3], commands[2]);
+                            var jsonBody = new Gson().toJson(newUser);
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(new URI(serverUrl + "/user"))
+                                    .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                                    .header("Content-Type", "application/json")
+                                    .build();
+                            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                            if (response.statusCode() == 200) {
+                                RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+                                System.out.println(registerResponse.toString());
+                            }
+                            else{
+                                System.out.println("Error: received status code " + response.statusCode());
+                            }
+                        }
+                        catch (Exception e){
+                            System.out.println(e.getMessage());
+                        }
+                    else{
+                        System.out.println("Must provide a Username, Password, and Email.");
+                    }
                     break;
                 case "quit":
                     System.out.println("Quit not implemented yet");
