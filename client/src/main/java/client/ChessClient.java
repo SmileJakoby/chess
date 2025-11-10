@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import datamodel.*;
 import model.GameData;
@@ -29,8 +30,10 @@ public class ChessClient {
     private static String myAuthToken = "";
 
     private static int authState = LOGGED_OUT;
+    private static String myUserName = "";
 
     private static final Map<Integer,Integer> IDMap = new HashMap<>();
+    private static final Map<Integer, Boolean> isBlackMap = new HashMap<>();
 
     public ChessClient(String givenServerUrl){
         serverUrl = givenServerUrl;
@@ -88,7 +91,7 @@ public class ChessClient {
                 case "join":
                     return JoinGame(commands);
                 case "observe":
-                    return "observe game not implemented yet";
+                    return ObserveGame(commands);
             }
         }
         return "Unrecognized command";
@@ -134,6 +137,7 @@ public class ChessClient {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
                     authState = LOGGED_IN;
+                    myUserName = registerResponse.username();
                     return "Registered " + registerResponse.username() + "\nWelcome to Chess!";
                 }
                 else{
@@ -164,6 +168,7 @@ public class ChessClient {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
                     authState = LOGGED_IN;
+                    myUserName = registerResponse.username();
                     return "Logged in as " + registerResponse.username() + "\nWelcome to Chess!";
                 }
                 else{
@@ -191,6 +196,7 @@ public class ChessClient {
             if (response.statusCode() == 200) {
                 myAuthToken = "";
                 authState = LOGGED_OUT;
+                myUserName = "";
                 return "Logged out";
             }
             else{
@@ -254,6 +260,7 @@ public class ChessClient {
                 GamesListResponse gamesListResponse = new Gson().fromJson(response.body(), GamesListResponse.class);
                 StringBuilder allGamesListStringBuilder = new StringBuilder();
                 IDMap.clear();
+                isBlackMap.clear();
                 for (int i = 0; i < gamesListResponse.games().length; i++) {
                     var jsonBody = new Gson().toJson(gamesListResponse.games()[i]);
                     GameResponse gameResponse = new Gson().fromJson(jsonBody, GameResponse.class);
@@ -276,6 +283,12 @@ public class ChessClient {
                             .append(gameResponse.blackUsername())
                             .append("\n");
                     IDMap.put(i+1, gameResponse.gameID());
+                    if (gameResponse.blackUsername().equals(myUserName)) {
+                        isBlackMap.put(i+1, true);
+                    }
+                    else{
+                        isBlackMap.put(i+1, false);
+                    }
                 }
                 return allGamesListStringBuilder.toString();
             }
@@ -318,5 +331,35 @@ public class ChessClient {
         else{
             return "Must provide a GameID and Color.";
         }
+    }
+
+    private static String ObserveGame(String[] commands){
+        if (commands.length >= 2)
+            try{
+                //Observe game not fully implemented yet.
+                //The server backend isn't even built to send a game
+                //from the database yet.
+                ChessGame newGame = new ChessGame();
+                return chessGameDisplay(newGame, isBlackMap.get(Integer.parseInt(commands[1])));
+            }
+            catch (Exception e){
+                return e.getMessage();
+            }
+        else{
+            return "Must provide a GameID and Color.";
+        }
+    }
+
+    private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack){
+        StringBuilder boardBuilder = new StringBuilder();
+        //Top row
+        boardBuilder
+                .append(SET_BG_COLOR_GREEN)
+                .append(SET_TEXT_COLOR_BLACK)
+                .append(EMPTY)
+                .append("a  b  c  d  e  f  g  h")
+                .append(EMPTY)
+                .append(RESET_BG_COLOR);
+        return boardBuilder.toString();
     }
 }
