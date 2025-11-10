@@ -2,10 +2,14 @@ package client;
 
 import com.google.gson.Gson;
 import datamodel.CreateGameResponse;
+import datamodel.GameResponse;
+import datamodel.GamesListResponse;
 import datamodel.RegisterResponse;
 import model.GameData;
 import model.UserData;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
@@ -28,6 +32,8 @@ public class ChessClient {
     private static String myAuthToken = "";
 
     private static int authState = LOGGED_OUT;
+
+    private static Map<Integer,Integer> IDMap;
 
     public ChessClient(String givenServerUrl){
         serverUrl = givenServerUrl;
@@ -81,7 +87,7 @@ public class ChessClient {
                 case "create":
                     return CreateGame(commands);
                 case "list":
-                    return "list games not implemented yet";
+                    return ListGames();
                 case "join":
                     return "join game not implemented yet";
                 case "observe":
@@ -235,6 +241,36 @@ public class ChessClient {
             }
         else{
             return "Must provide a Name.";
+        }
+    }
+
+    public static String ListGames(){
+        try{
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(serverUrl + "/game"))
+                    .GET()
+                    .header("Content-Type", "application/json")
+                    .header("authorization", myAuthToken)
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                GamesListResponse gamesListResponse = new Gson().fromJson(response.body(), GamesListResponse.class);
+                StringBuilder allGamesListStringBuilder = new StringBuilder();
+                for (int i = 0; i < gamesListResponse.games().length; i++) {
+
+                    var jsonBody = new Gson().toJson(gamesListResponse.games()[i]);
+                    GameResponse gameResponse = new Gson().fromJson(jsonBody, GameResponse.class);
+                    allGamesListStringBuilder.append(gameResponse.toString());
+                }
+                return allGamesListStringBuilder.toString();
+            }
+            else{
+                ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
+                return errorMessage.message();
+            }
+        }
+        catch (Exception e){
+            return e.getMessage();
         }
     }
 }
