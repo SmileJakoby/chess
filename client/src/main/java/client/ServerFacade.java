@@ -1,14 +1,31 @@
 package client;
 
-import datamodel.LoginResponse;
-import datamodel.RegisterResponse;
+import com.google.gson.Gson;
 import model.UserData;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+
 public class ServerFacade {
-    public HttpResponse<String> Register(UserData request){
-        return null;
+    public static String serverUrl = "";
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
+
+    public void setServerURL(String serverURL) {
+        serverUrl = serverURL;
+    }
+    public HttpResponse<String> Register(UserData givenUserData) throws URISyntaxException, IOException, InterruptedException {
+        var jsonBody = new Gson().toJson(givenUserData);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(serverUrl + "/user"))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json")
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
     public HttpResponse<String> Login(UserData request){
         return null;

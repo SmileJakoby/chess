@@ -24,6 +24,7 @@ public class ChessClient {
 
     private static final int LOGGED_OUT = 0;
     private static final int LOGGED_IN = 1;
+    private static final ServerFacade serverFacade = new ServerFacade();
 
     private static String serverUrl = "";
 
@@ -39,6 +40,7 @@ public class ChessClient {
 
     public ChessClient(String givenServerUrl){
         serverUrl = givenServerUrl;
+        serverFacade.setServerURL(givenServerUrl);
     }
     public static void run() {
         Scanner inputScanner = new Scanner(System.in);
@@ -128,13 +130,7 @@ public class ChessClient {
         if (commands.length >= 4)
             try{
                 UserData newUser = new UserData(commands[1], commands[3], commands[2]);
-                var jsonBody = new Gson().toJson(newUser);
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(new URI(serverUrl + "/user"))
-                        .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                        .header("Content-Type", "application/json")
-                        .build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = serverFacade.Register(newUser);
                 if (response.statusCode() == 200) {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
