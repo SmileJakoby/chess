@@ -409,45 +409,45 @@ public class ChessClient {
         switch (givenPiece.getPieceType()){
             case KING:
                 if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "K" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_RED + "K";
                 }
                 else{
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "K" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_BLUE + "K";
                 }
             case QUEEN:
                 if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "Q" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_RED + "Q";
                 }
                 else{
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "Q" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_BLUE + "Q";
                 }
             case BISHOP:
                 if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "B" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_RED + "B";
                 }
                 else{
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "B" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_BLUE + "B";
                 }
             case KNIGHT:
                 if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "N" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_RED + "N";
                 }
                 else{
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "N" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_BLUE + "N";
                 }
             case ROOK:
                 if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "R" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_RED + "R";
                 }
                 else{
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "R" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_BLUE + "R";
                 }
             case PAWN:
                 if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "P" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_RED + "P";
                 }
                 else{
-                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "P" + RESET_TEXT_BOLD_FAINT;
+                    return SET_TEXT_COLOR_BLUE + "P";
                 }
         }
         return EMPTY;
