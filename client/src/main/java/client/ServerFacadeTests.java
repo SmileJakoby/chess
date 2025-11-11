@@ -1,9 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
-import datamodel.GamesListResponse;
-import datamodel.LoginResponse;
-import datamodel.RegisterResponse;
+import datamodel.*;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
@@ -139,5 +137,35 @@ public class ServerFacadeTests {
     void listGamesNegative() throws Exception {
         var response = facade.ListGames("bad auth");
         assertEquals(401, response.statusCode());
+    }
+
+    @Test
+    @Order(11)
+    void joinPositive() throws Exception {
+        UserData request = new UserData("joinGamePlayer", "password", "p1@email.com");
+        var response = facade.Register(request);
+        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        GameData gameData1 = new GameData(null,null,null,"JoinGame",null);
+        var response2 = facade.CreateGame(gameData1, registerResponse.authToken());
+        assertNotNull(response2);
+        CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), CreateGameResponse.class);
+        JoinGameRequest joinRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
+        var response3 = facade.JoinGame(joinRequest, registerResponse.authToken());
+        assertEquals(200, response3.statusCode());
+    }
+
+    @Test
+    @Order(12)
+    void joinNegative() throws Exception {
+        UserData request = new UserData("joinGamePlayer2", "password", "p1@email.com");
+        var response = facade.Register(request);
+        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        GameData gameData1 = new GameData(null,null,null,"JoinGame2",null);
+        var response2 = facade.CreateGame(gameData1, registerResponse.authToken());
+        CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), CreateGameResponse.class);
+        JoinGameRequest joinRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
+        facade.JoinGame(joinRequest, registerResponse.authToken());
+        var response3 = facade.JoinGame(joinRequest, registerResponse.authToken());
+        assertEquals(403, response3.statusCode());
     }
 }
