@@ -285,7 +285,7 @@ public class ChessClient {
                             .append(gameResponse.blackUsername())
                             .append("\n");
                     IDMap.put(i+1, gameResponse.gameID());
-                    if (gameResponse.blackUsername().equals(myUserName)) {
+                    if (gameResponse.blackUsername() != null &&gameResponse.blackUsername().equals(myUserName)) {
                         isBlackMap.put(i+1, true);
                     }
                     else{
@@ -354,50 +354,94 @@ public class ChessClient {
 
     private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack){
         StringBuilder boardBuilder = new StringBuilder();
-        //Top row
-        boardBuilder
-                .append(SET_BG_COLOR_LIGHT_GREY)
-                .append(SET_TEXT_COLOR_BLACK)
-                .append("    a  b  c  d  e  f  g  h    ")
-                .append(RESET_BG_COLOR)
-                .append("\n");
-
-        for (int i = 8; i > 0; i--)
-        {
+        if (!isBlack) {
             boardBuilder
                     .append(SET_BG_COLOR_LIGHT_GREY)
                     .append(SET_TEXT_COLOR_BLACK)
-                    .append(" ")
-                    .append(i)
-                    .append(" ")
-                    .append(RESET_BG_COLOR);
-            for (int j = 1; j <= 8; j++){
-                String squareColor = SET_BG_COLOR_WHITE;
-                if ((i + j)%2 == 0)
-                {
-                    squareColor = SET_BG_COLOR_BLACK;
+                    .append("    a  b  c  d  e  f  g  h    ")
+                    .append(RESET_BG_COLOR)
+                    .append("\n");
+
+            for (int i = 8; i > 0; i--) {
+                boardBuilder
+                        .append(SET_BG_COLOR_LIGHT_GREY)
+                        .append(SET_TEXT_COLOR_BLACK)
+                        .append(" ")
+                        .append(i)
+                        .append(" ")
+                        .append(RESET_BG_COLOR);
+                for (int j = 1; j <= 8; j++) {
+                    String squareColor = SET_BG_COLOR_WHITE;
+                    if ((i + j) % 2 == 0) {
+                        squareColor = SET_BG_COLOR_BLACK;
+                    }
+                    boardBuilder
+                            .append(squareColor)
+                            .append(" ")
+                            .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
+                            .append(" ");
                 }
                 boardBuilder
-                        .append(squareColor)
+                        .append(SET_BG_COLOR_LIGHT_GREY)
+                        .append(SET_TEXT_COLOR_BLACK)
                         .append(" ")
-                        .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
-                        .append(" ");
+                        .append(i)
+                        .append(" ")
+                        .append(RESET_BG_COLOR)
+                        .append("\n");
             }
             boardBuilder
                     .append(SET_BG_COLOR_LIGHT_GREY)
                     .append(SET_TEXT_COLOR_BLACK)
-                    .append(" ")
-                    .append(i)
-                    .append(" ")
+                    .append("    a  b  c  d  e  f  g  h    ")
                     .append(RESET_BG_COLOR)
                     .append("\n");
         }
-        boardBuilder
-                .append(SET_BG_COLOR_LIGHT_GREY)
-                .append(SET_TEXT_COLOR_BLACK)
-                .append("    a  b  c  d  e  f  g  h    ")
-                .append(RESET_BG_COLOR)
-                .append("\n");
+        else {
+            if (isBlack) {
+                boardBuilder
+                        .append(SET_BG_COLOR_LIGHT_GREY)
+                        .append(SET_TEXT_COLOR_BLACK)
+                        .append("    h  g  f  e  d  c  b  a    ")
+                        .append(RESET_BG_COLOR)
+                        .append("\n");
+
+                for (int i = 1; i <= 8; i++) {
+                    boardBuilder
+                            .append(SET_BG_COLOR_LIGHT_GREY)
+                            .append(SET_TEXT_COLOR_BLACK)
+                            .append(" ")
+                            .append(i)
+                            .append(" ")
+                            .append(RESET_BG_COLOR);
+                    for (int j = 8; j >= 1; j--) {
+                        String squareColor = SET_BG_COLOR_WHITE;
+                        if ((i + j) % 2 == 0) {
+                            squareColor = SET_BG_COLOR_BLACK;
+                        }
+                        boardBuilder
+                                .append(squareColor)
+                                .append(" ")
+                                .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
+                                .append(" ");
+                    }
+                    boardBuilder
+                            .append(SET_BG_COLOR_LIGHT_GREY)
+                            .append(SET_TEXT_COLOR_BLACK)
+                            .append(" ")
+                            .append(i)
+                            .append(" ")
+                            .append(RESET_BG_COLOR)
+                            .append("\n");
+                }
+                boardBuilder
+                        .append(SET_BG_COLOR_LIGHT_GREY)
+                        .append(SET_TEXT_COLOR_BLACK)
+                        .append("    h  g  f  e  d  c  b  a    ")
+                        .append(RESET_BG_COLOR)
+                        .append("\n");
+            }
+        }
         return boardBuilder.toString();
     }
 
