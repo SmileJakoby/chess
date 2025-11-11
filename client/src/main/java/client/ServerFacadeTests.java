@@ -3,6 +3,7 @@ package client;
 import com.google.gson.Gson;
 import datamodel.LoginResponse;
 import datamodel.RegisterResponse;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -40,7 +41,7 @@ public class ServerFacadeTests {
     @Test
     @Order(1)
     void registerPositive() throws Exception {
-        UserData request = new UserData("player1", "password", "p1@email.com");
+        UserData request = new UserData("registerPlayer", "password", "p1@email.com");
         var response = facade.Register(request);
         RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
         assertNotNull(registerResponse.authToken());
@@ -49,7 +50,7 @@ public class ServerFacadeTests {
     @Test
     @Order(2)
     void registerNegative() throws Exception {
-        UserData request = new UserData("player1", "password", "p1@email.com");
+        UserData request = new UserData("registerPlayer2", "password", "p1@email.com");
         facade.Register(request);
         var response = facade.Register(request);
         assertEquals(403, response.statusCode());
@@ -57,9 +58,9 @@ public class ServerFacadeTests {
     @Test
     @Order(3)
     void loginPositive() throws Exception {
-        UserData request = new UserData("player1", "password", "p1@email.com");
+        UserData request = new UserData("loginPlayer", "password", "p1@email.com");
         var response = facade.Register(request);
-        request = new UserData("player1", "password", "p1@email.com");
+        request = new UserData("loginPlayer", "password", "p1@email.com");
         response = facade.Login(request);
         LoginResponse loginResponse = new Gson().fromJson(response.body(), LoginResponse.class);
         assertNotNull(loginResponse.authToken());
@@ -77,7 +78,7 @@ public class ServerFacadeTests {
     @Test
     @Order(5)
     void logoutPositive() throws Exception {
-        UserData request = new UserData("player1", "password", "p1@email.com");
+        UserData request = new UserData("logoutPlayer", "password", "p1@email.com");
         var response = facade.Register(request);
         RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
         var response2 = facade.Logout(registerResponse.authToken());
@@ -90,5 +91,28 @@ public class ServerFacadeTests {
     void logoutNegative() throws Exception {
         var response = facade.Logout("bad auth");
         assertEquals(401, response.statusCode());
+    }
+    @Test
+    @Order(7)
+    void createGamePositive() throws Exception {
+        UserData request = new UserData("createGamePlayer", "password", "p1@email.com");
+        var response = facade.Register(request);
+        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        GameData gameData = new GameData(null,null,null,"It'sChessTime",null);
+        var response2 = facade.CreateGame(gameData, registerResponse.authToken());
+        assertNotNull(response2);
+        assertEquals(200, response2.statusCode());
+    }
+
+    @Test
+    @Order(8)
+    void createGameNegative() throws Exception {
+        UserData request = new UserData("createGamePlayer2", "password", "p1@email.com");
+        var response = facade.Register(request);
+        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        GameData gameData = new GameData(null,null,null,"It'sNotChessTime",null);
+        facade.CreateGame(gameData, registerResponse.authToken());
+        var response2 = facade.CreateGame(gameData, registerResponse.authToken());
+        assertEquals(400, response2.statusCode());
     }
 }

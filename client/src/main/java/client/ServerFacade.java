@@ -20,6 +20,7 @@ public class ServerFacade {
     public void setServerURL(String serverURL) {
         serverUrl = serverURL;
     }
+
     public HttpResponse<String> Register(UserData givenUserData) throws URISyntaxException, IOException, InterruptedException {
         var jsonBody = new Gson().toJson(givenUserData);
         HttpRequest request = HttpRequest.newBuilder()
