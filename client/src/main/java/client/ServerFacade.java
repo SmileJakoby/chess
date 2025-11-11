@@ -80,4 +80,11 @@ public class ServerFacade {
         //To be implemented in phase 6.
         return null;
     }
+    public HttpResponse<String> clearDatabase() throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(serverUrl + "/db"))
+                .DELETE()
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
 }
