@@ -1,6 +1,8 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import datamodel.*;
 import model.GameData;
@@ -354,12 +356,100 @@ public class ChessClient {
         StringBuilder boardBuilder = new StringBuilder();
         //Top row
         boardBuilder
-                .append(SET_BG_COLOR_GREEN)
+                .append(SET_BG_COLOR_LIGHT_GREY)
                 .append(SET_TEXT_COLOR_BLACK)
-                .append(EMPTY)
-                .append("a  b  c  d  e  f  g  h")
-                .append(EMPTY)
-                .append(RESET_BG_COLOR);
+                .append("    a  b  c  d  e  f  g  h    ")
+                .append(RESET_BG_COLOR)
+                .append("\n");
+
+        for (int i = 8; i > 0; i--)
+        {
+            boardBuilder
+                    .append(SET_BG_COLOR_LIGHT_GREY)
+                    .append(SET_TEXT_COLOR_BLACK)
+                    .append(" ")
+                    .append(i)
+                    .append(" ")
+                    .append(RESET_BG_COLOR);
+            for (int j = 1; j <= 8; j++){
+                String squareColor = SET_BG_COLOR_WHITE;
+                if ((i + j)%2 == 0)
+                {
+                    squareColor = SET_BG_COLOR_BLACK;
+                }
+                boardBuilder
+                        .append(squareColor)
+                        .append(" ")
+                        .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
+                        .append(" ");
+            }
+            boardBuilder
+                    .append(SET_BG_COLOR_LIGHT_GREY)
+                    .append(SET_TEXT_COLOR_BLACK)
+                    .append(" ")
+                    .append(i)
+                    .append(" ")
+                    .append(RESET_BG_COLOR)
+                    .append("\n");
+        }
+        boardBuilder
+                .append(SET_BG_COLOR_LIGHT_GREY)
+                .append(SET_TEXT_COLOR_BLACK)
+                .append("    a  b  c  d  e  f  g  h    ")
+                .append(RESET_BG_COLOR)
+                .append("\n");
         return boardBuilder.toString();
+    }
+
+    private static String drawPiece(ChessPiece givenPiece){
+        if (givenPiece == null)
+        {
+            return " ";
+        }
+        switch (givenPiece.getPieceType()){
+            case KING:
+                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "K" + RESET_TEXT_BOLD_FAINT;
+                }
+                else{
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "K" + RESET_TEXT_BOLD_FAINT;
+                }
+            case QUEEN:
+                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "Q" + RESET_TEXT_BOLD_FAINT;
+                }
+                else{
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "Q" + RESET_TEXT_BOLD_FAINT;
+                }
+            case BISHOP:
+                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "B" + RESET_TEXT_BOLD_FAINT;
+                }
+                else{
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "B" + RESET_TEXT_BOLD_FAINT;
+                }
+            case KNIGHT:
+                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "N" + RESET_TEXT_BOLD_FAINT;
+                }
+                else{
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "N" + RESET_TEXT_BOLD_FAINT;
+                }
+            case ROOK:
+                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "R" + RESET_TEXT_BOLD_FAINT;
+                }
+                else{
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "R" + RESET_TEXT_BOLD_FAINT;
+                }
+            case PAWN:
+                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_RED + "P" + RESET_TEXT_BOLD_FAINT;
+                }
+                else{
+                    return SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE + "P" + RESET_TEXT_BOLD_FAINT;
+                }
+        }
+        return EMPTY;
     }
 }
