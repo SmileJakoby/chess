@@ -1,13 +1,13 @@
 package client;
 
 import com.google.gson.Gson;
+import datamodel.LoginResponse;
 import datamodel.RegisterResponse;
 import model.UserData;
 import org.junit.jupiter.api.*;
 import server.Server;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ServerFacadeTests {
@@ -21,10 +21,8 @@ public class ServerFacadeTests {
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
         facade = new ServerFacade();
-        StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder.append("http://localhost:")
-                .append(port);
-        facade.setServerURL(urlBuilder.toString());
+        String urlBuilder = "http://localhost:" + port;
+        facade.setServerURL(urlBuilder);
         try {
             facade.clearDatabase();
         }
@@ -40,6 +38,7 @@ public class ServerFacadeTests {
 
 
     @Test
+    @Order(1)
     void registerPositive() throws Exception {
         UserData request = new UserData("player1", "password", "p1@email.com");
         var response = facade.Register(request);
@@ -47,4 +46,33 @@ public class ServerFacadeTests {
         assertNotNull(registerResponse.authToken());
         assertTrue(registerResponse.authToken().length() > 10);
     }
+    @Test
+    @Order(2)
+    void registerNegative() throws Exception {
+        UserData request = new UserData("player1", "password", "p1@email.com");
+        facade.Register(request);
+        var response = facade.Register(request);
+        assertEquals(403, response.statusCode());
+    }
+    @Test
+    @Order(3)
+    void loginPositive() throws Exception {
+        UserData request = new UserData("player1", "password", "p1@email.com");
+        var response = facade.Register(request);
+        request = new UserData("player1", "password", "p1@email.com");
+        response = facade.Login(request);
+        LoginResponse loginResponse = new Gson().fromJson(response.body(), LoginResponse.class);
+        assertNotNull(loginResponse.authToken());
+        assertTrue(loginResponse.authToken().length() > 10);
+    }
+
+    @Test
+    @Order(4)
+    void loginNegative() throws Exception {
+        var request = new UserData("NotAUser", "password", "p1@email.com");
+        var response = facade.Login(request);
+        assertEquals(401, response.statusCode());
+    }
+
+
 }
