@@ -1,6 +1,7 @@
 package client;
 
 import com.google.gson.Gson;
+import datamodel.GamesListResponse;
 import datamodel.LoginResponse;
 import datamodel.RegisterResponse;
 import model.GameData;
@@ -114,5 +115,29 @@ public class ServerFacadeTests {
         facade.CreateGame(gameData, registerResponse.authToken());
         var response2 = facade.CreateGame(gameData, registerResponse.authToken());
         assertEquals(400, response2.statusCode());
+    }
+
+    @Test
+    @Order(9)
+    void listGamesPositive() throws Exception {
+        UserData request = new UserData("listGamePlayer", "password", "p1@email.com");
+        var response = facade.Register(request);
+        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        GameData gameData1 = new GameData(null,null,null,"FirstGame",null);
+        facade.CreateGame(gameData1, registerResponse.authToken());
+        GameData gameData2 = new GameData(null,null,null,"SecondGame",null);
+        facade.CreateGame(gameData2, registerResponse.authToken());
+        GameData gameData3 = new GameData(null,null,null,"ThirdGame",null);
+        facade.CreateGame(gameData3, registerResponse.authToken());
+        var response2 = facade.ListGames(registerResponse.authToken());
+        assertEquals(200, response2.statusCode());
+        GamesListResponse gamesListResponse = new Gson().fromJson(response2.body(), GamesListResponse.class);
+        assertTrue(gamesListResponse.games().length >= 3);
+    }
+    @Test
+    @Order(10)
+    void listGamesNegative() throws Exception {
+        var response = facade.ListGames("bad auth");
+        assertEquals(401, response.statusCode());
     }
 }
