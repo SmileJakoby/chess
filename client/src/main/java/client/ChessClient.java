@@ -155,13 +155,7 @@ public class ChessClient {
         if (commands.length >= 3)
             try{
                 UserData newUser = new UserData(commands[1], null, commands[2]);
-                var jsonBody = new Gson().toJson(newUser);
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(new URI(serverUrl + "/session"))
-                        .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                        .header("Content-Type", "application/json")
-                        .build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = serverFacade.Login(newUser);
                 if (response.statusCode() == 200) {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
