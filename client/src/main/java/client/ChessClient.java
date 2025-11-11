@@ -14,9 +14,6 @@ import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 
@@ -25,10 +22,6 @@ public class ChessClient {
     private static final int LOGGED_OUT = 0;
     private static final int LOGGED_IN = 1;
     private static final ServerFacade serverFacade = new ServerFacade();
-
-    private static String serverUrl = "";
-
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
 
     private static String myAuthToken = "";
 
@@ -39,7 +32,6 @@ public class ChessClient {
     private static final Map<Integer, Boolean> isBlackMap = new HashMap<>();
 
     public ChessClient(String givenServerUrl){
-        serverUrl = givenServerUrl;
         serverFacade.setServerURL(givenServerUrl);
     }
     public static void run() {
@@ -55,7 +47,7 @@ public class ChessClient {
                 System.out.print("[LOGGED IN] >>> ");
             }
             String line = inputScanner.nextLine();
-            line = line.toLowerCase();
+
 
             try {
                 result = EvalCLI(line);
@@ -70,6 +62,7 @@ public class ChessClient {
     private static String EvalCLI(String givenString)
     {
         var commands = givenString.split(" ");
+        commands[0] = commands[0].toLowerCase();
         if (authState == LOGGED_OUT) {
             switch (commands[0]) {
                 case "help":
@@ -178,13 +171,7 @@ public class ChessClient {
 
     private static String Logout(){
         try{
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(serverUrl + "/session"))
-                    .DELETE()
-                    .header("Content-Type", "application/json")
-                    .header("authorization", myAuthToken)
-                    .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = serverFacade.Logout(myAuthToken);
             if (response.statusCode() == 200) {
                 myAuthToken = "";
                 authState = LOGGED_OUT;
@@ -214,14 +201,7 @@ public class ChessClient {
                 }
                 String fullName = fullNameBuilder.toString();
                 GameData newGame = new GameData(null, null, null, fullName, null);
-                var jsonBody = new Gson().toJson(newGame);
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(new URI(serverUrl + "/game"))
-                        .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
-                        .header("Content-Type", "application/json")
-                        .header("authorization", myAuthToken)
-                        .build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> response = serverFacade.CreateGame(newGame, myAuthToken);
                 if (response.statusCode() == 200) {
                     CreateGameResponse createGameResponse = new Gson().fromJson(response.body(), CreateGameResponse.class);
                     return "Created game with ID of " + createGameResponse.gameID();
@@ -241,13 +221,7 @@ public class ChessClient {
 
     public static String ListGames(){
         try{
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(serverUrl + "/game"))
-                    .GET()
-                    .header("Content-Type", "application/json")
-                    .header("authorization", myAuthToken)
-                    .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = serverFacade.ListGames(myAuthToken);
             if (response.statusCode() == 200) {
                 GamesListResponse gamesListResponse = new Gson().fromJson(response.body(), GamesListResponse.class);
                 StringBuilder allGamesListStringBuilder = new StringBuilder();
@@ -300,16 +274,12 @@ public class ChessClient {
                 Integer localGameID = Integer.parseInt(commands[1]);
                 Integer remoteGameID = IDMap.get(localGameID);
                 String playerColor = commands[2].toUpperCase();
-                JoinGameRequest newGame = new JoinGameRequest(playerColor, remoteGameID);
-                var jsonBody = new Gson().toJson(newGame);
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(new URI(serverUrl + "/game"))
-                        .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
-                        .header("Content-Type", "application/json")
-                        .header("authorization", myAuthToken)
-                        .build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                JoinGameRequest joinRequest = new JoinGameRequest(playerColor, remoteGameID);
+                HttpResponse<String> response = serverFacade.JoinGame(joinRequest, myAuthToken);
                 if (response.statusCode() == 200) {
+                    if (playerColor.equals("BLACK")){
+                        isBlackMap.put(localGameID, true);
+                    }
                     return "Joined game";
                 }
                 else{
@@ -388,49 +358,47 @@ public class ChessClient {
                     .append("\n");
         }
         else {
-            if (isBlack) {
+            boardBuilder
+                    .append(SET_BG_COLOR_LIGHT_GREY)
+                    .append(SET_TEXT_COLOR_BLACK)
+                    .append("    h  g  f  e  d  c  b  a    ")
+                    .append(RESET_BG_COLOR)
+                    .append("\n");
+
+            for (int i = 1; i <= 8; i++) {
                 boardBuilder
                         .append(SET_BG_COLOR_LIGHT_GREY)
                         .append(SET_TEXT_COLOR_BLACK)
-                        .append("    h  g  f  e  d  c  b  a    ")
-                        .append(RESET_BG_COLOR)
-                        .append("\n");
-
-                for (int i = 1; i <= 8; i++) {
-                    boardBuilder
-                            .append(SET_BG_COLOR_LIGHT_GREY)
-                            .append(SET_TEXT_COLOR_BLACK)
-                            .append(" ")
-                            .append(i)
-                            .append(" ")
-                            .append(RESET_BG_COLOR);
-                    for (int j = 8; j >= 1; j--) {
-                        String squareColor = SET_BG_COLOR_WHITE;
-                        if ((i + j) % 2 == 0) {
-                            squareColor = SET_BG_COLOR_BLACK;
-                        }
-                        boardBuilder
-                                .append(squareColor)
-                                .append(" ")
-                                .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
-                                .append(" ");
+                        .append(" ")
+                        .append(i)
+                        .append(" ")
+                        .append(RESET_BG_COLOR);
+                for (int j = 8; j >= 1; j--) {
+                    String squareColor = SET_BG_COLOR_WHITE;
+                    if ((i + j) % 2 == 0) {
+                        squareColor = SET_BG_COLOR_BLACK;
                     }
                     boardBuilder
-                            .append(SET_BG_COLOR_LIGHT_GREY)
-                            .append(SET_TEXT_COLOR_BLACK)
+                            .append(squareColor)
                             .append(" ")
-                            .append(i)
-                            .append(" ")
-                            .append(RESET_BG_COLOR)
-                            .append("\n");
+                            .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
+                            .append(" ");
                 }
                 boardBuilder
                         .append(SET_BG_COLOR_LIGHT_GREY)
                         .append(SET_TEXT_COLOR_BLACK)
-                        .append("    h  g  f  e  d  c  b  a    ")
+                        .append(" ")
+                        .append(i)
+                        .append(" ")
                         .append(RESET_BG_COLOR)
                         .append("\n");
             }
+            boardBuilder
+                    .append(SET_BG_COLOR_LIGHT_GREY)
+                    .append(SET_TEXT_COLOR_BLACK)
+                    .append("    h  g  f  e  d  c  b  a    ")
+                    .append(RESET_BG_COLOR)
+                    .append("\n");
         }
         return boardBuilder.toString();
     }
