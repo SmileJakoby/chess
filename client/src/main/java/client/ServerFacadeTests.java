@@ -74,5 +74,21 @@ public class ServerFacadeTests {
         assertEquals(401, response.statusCode());
     }
 
+    @Test
+    @Order(5)
+    void logoutPositive() throws Exception {
+        UserData request = new UserData("player1", "password", "p1@email.com");
+        var response = facade.Register(request);
+        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        var response2 = facade.Logout(registerResponse.authToken());
+        assertNotNull(response2);
+        assertEquals(200, response2.statusCode());
+    }
 
+    @Test
+    @Order(6)
+    void logoutNegative() throws Exception {
+        var response = facade.Logout("bad auth");
+        assertEquals(401, response.statusCode());
+    }
 }
