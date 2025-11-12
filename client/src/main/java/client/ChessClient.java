@@ -22,7 +22,7 @@ public class ChessClient {
     private static final int LOGGED_OUT = 0;
     private static final int LOGGED_IN = 1;
     private static final ServerFacade SERVER_FACADE = new ServerFacade();
-    private static boolean HASLISTED = false;
+    private static boolean hasListed = false;
 
     private static String myAuthToken = "";
 
@@ -254,7 +254,7 @@ public class ChessClient {
                         IS_BLACK_MAP.put(i+1, false);
                     }
                 }
-                HASLISTED = true;
+                hasListed = true;
                 return allGamesListStringBuilder.toString();
             }
             else{
@@ -268,7 +268,7 @@ public class ChessClient {
     }
 
     private static String joinGame(String[] commands){
-        if (!HASLISTED){
+        if (!hasListed){
             return "Unknown GameID. Make sure to use the command 'list' before trying to join or observe.";
         }
         if (commands.length >= 3) {
@@ -297,7 +297,7 @@ public class ChessClient {
     }
 
     private static String observeGame(String[] commands){
-        if (!HASLISTED){
+        if (!hasListed){
             return "Unknown GameID. Make sure to use the command 'list' before trying to join or observe.";
         }
         if (commands.length >= 2) {
