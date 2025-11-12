@@ -21,7 +21,7 @@ public class ServerFacade {
         serverUrl = serverURL;
     }
 
-    public HttpResponse<String> Register(UserData givenUserData) throws URISyntaxException, IOException, InterruptedException {
+    public HttpResponse<String> register(UserData givenUserData) throws URISyntaxException, IOException, InterruptedException {
         var jsonBody = new Gson().toJson(givenUserData);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/user"))
@@ -30,7 +30,7 @@ public class ServerFacade {
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
-    public HttpResponse<String> Login(UserData givenUserData) throws URISyntaxException, IOException, InterruptedException {
+    public HttpResponse<String> login(UserData givenUserData) throws URISyntaxException, IOException, InterruptedException {
         var jsonBody = new Gson().toJson(givenUserData);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/session"))
@@ -39,7 +39,7 @@ public class ServerFacade {
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
-    public HttpResponse<String> Logout(String givenAuthToken) throws URISyntaxException, IOException, InterruptedException {
+    public HttpResponse<String> logout(String givenAuthToken) throws URISyntaxException, IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/session"))
                 .DELETE()
@@ -48,7 +48,7 @@ public class ServerFacade {
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
-    public HttpResponse<String> CreateGame(GameData givenGame, String givenAuthToken) throws IOException, InterruptedException, URISyntaxException {
+    public HttpResponse<String> createGame(GameData givenGame, String givenAuthToken) throws IOException, InterruptedException, URISyntaxException {
         var jsonBody = new Gson().toJson(givenGame);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/game"))
@@ -58,7 +58,7 @@ public class ServerFacade {
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
-    public HttpResponse<String> ListGames(String givenAuthToken) throws IOException, InterruptedException, URISyntaxException{
+    public HttpResponse<String> listGames(String givenAuthToken) throws IOException, InterruptedException, URISyntaxException{
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/game"))
                 .GET()
@@ -67,7 +67,8 @@ public class ServerFacade {
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
-    public HttpResponse<String> JoinGame(JoinGameRequest givenJoinGameRequest, String givenAuthToken) throws IOException, InterruptedException, URISyntaxException{
+    public HttpResponse<String> joinGame(JoinGameRequest givenJoinGameRequest, String givenAuthToken)
+            throws IOException, InterruptedException, URISyntaxException{
         var jsonBody = new Gson().toJson(givenJoinGameRequest);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/game"))

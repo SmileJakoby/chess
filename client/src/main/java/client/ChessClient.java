@@ -50,7 +50,7 @@ public class ChessClient {
 
 
             try {
-                result = EvalCLI(line);
+                result = evalCLI(line);
                 System.out.print(SET_TEXT_COLOR_YELLOW + result + "\n" + SET_TEXT_COLOR_WHITE);
             } catch (Throwable e) {
                 var msg = e.toString();
@@ -59,18 +59,18 @@ public class ChessClient {
         }
     }
 
-    private static String EvalCLI(String givenString)
+    private static String evalCLI(String givenString)
     {
         var commands = givenString.split(" ");
         commands[0] = commands[0].toLowerCase();
         if (authState == LOGGED_OUT) {
             switch (commands[0]) {
                 case "help":
-                    return PrintHelp();
+                    return printHelp();
                 case "register":
-                    return Register(commands);
+                    return register(commands);
                 case "login":
-                    return Login(commands);
+                    return login(commands);
                 case "quit":
                     return "Goodbye!";
             }
@@ -78,22 +78,22 @@ public class ChessClient {
         if (authState == LOGGED_IN) {
             switch (commands[0]) {
                 case "help":
-                    return PrintHelp();
+                    return printHelp();
                 case "logout":
-                    return Logout();
+                    return logout();
                 case "create":
-                    return CreateGame(commands);
+                    return createGame(commands);
                 case "list":
-                    return ListGames();
+                    return listGames();
                 case "join":
-                    return JoinGame(commands);
+                    return joinGame(commands);
                 case "observe":
-                    return ObserveGame(commands);
+                    return observeGame(commands);
             }
         }
         return "Unrecognized command";
     }
-    private static String PrintHelp(){
+    private static String printHelp(){
         if (authState == LOGGED_OUT){
             return ("  " + SET_TEXT_COLOR_BLUE + "register <USERNAME> <PASSWORD> <EMAIL>"
                     + SET_TEXT_COLOR_MAGENTA + " - Register a new account.\n" +
@@ -119,59 +119,57 @@ public class ChessClient {
                     + SET_TEXT_COLOR_MAGENTA + " - Join a game as an observer." + SET_TEXT_COLOR_WHITE);
         }
     }
-    private static String Register(String[] commands){
-        if (commands.length >= 4)
-            try{
+    private static String register(String[] commands){
+        if (commands.length >= 4) {
+            try {
                 UserData newUser = new UserData(commands[1], commands[3], commands[2]);
-                HttpResponse<String> response = serverFacade.Register(newUser);
+                HttpResponse<String> response = serverFacade.register(newUser);
                 if (response.statusCode() == 200) {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
                     authState = LOGGED_IN;
                     myUserName = registerResponse.username();
                     return "Registered " + registerResponse.username() + "\nWelcome to Chess!";
-                }
-                else{
+                } else {
                     ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
                     return errorMessage.message();
                 }
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 return e.getMessage();
             }
+        }
         else{
             return "Must provide a Username, Password, and Email.";
         }
     }
 
-    private static String Login(String[] commands){
-        if (commands.length >= 3)
-            try{
+    private static String login(String[] commands){
+        if (commands.length >= 3) {
+            try {
                 UserData newUser = new UserData(commands[1], null, commands[2]);
-                HttpResponse<String> response = serverFacade.Login(newUser);
+                HttpResponse<String> response = serverFacade.login(newUser);
                 if (response.statusCode() == 200) {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
                     authState = LOGGED_IN;
                     myUserName = registerResponse.username();
                     return "Logged in as " + registerResponse.username() + "\nWelcome to Chess!";
-                }
-                else{
+                } else {
                     ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
                     return errorMessage.message();
                 }
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 return e.getMessage();
             }
+        }
         else{
             return "Must provide a Username and Password.";
         }
     }
 
-    private static String Logout(){
+    private static String logout(){
         try{
-            HttpResponse<String> response = serverFacade.Logout(myAuthToken);
+            HttpResponse<String> response = serverFacade.logout(myAuthToken);
             if (response.statusCode() == 200) {
                 myAuthToken = "";
                 authState = LOGGED_OUT;
@@ -190,38 +188,37 @@ public class ChessClient {
         }
     }
 
-    private static String CreateGame(String[] commands){
-        if (commands.length >= 2)
-            try{
+    private static String createGame(String[] commands){
+        if (commands.length >= 2) {
+            try {
                 StringBuilder fullNameBuilder = new StringBuilder();
                 fullNameBuilder.append(commands[1]);
-                for (int i = 2; i < commands.length; i++){
+                for (int i = 2; i < commands.length; i++) {
                     fullNameBuilder.append(" ");
                     fullNameBuilder.append(commands[i]);
                 }
                 String fullName = fullNameBuilder.toString();
                 GameData newGame = new GameData(null, null, null, fullName, null);
-                HttpResponse<String> response = serverFacade.CreateGame(newGame, myAuthToken);
+                HttpResponse<String> response = serverFacade.createGame(newGame, myAuthToken);
                 if (response.statusCode() == 200) {
                     CreateGameResponse createGameResponse = new Gson().fromJson(response.body(), CreateGameResponse.class);
                     return "Created game with ID of " + createGameResponse.gameID();
-                }
-                else{
+                } else {
                     ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
                     return errorMessage.message();
                 }
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 return e.getMessage();
             }
+        }
         else{
             return "Must provide a Name.";
         }
     }
 
-    public static String ListGames(){
+    public static String listGames(){
         try{
-            HttpResponse<String> response = serverFacade.ListGames(myAuthToken);
+            HttpResponse<String> response = serverFacade.listGames(myAuthToken);
             if (response.statusCode() == 200) {
                 GamesListResponse gamesListResponse = new Gson().fromJson(response.body(), GamesListResponse.class);
                 StringBuilder allGamesListStringBuilder = new StringBuilder();
@@ -268,45 +265,44 @@ public class ChessClient {
         }
     }
 
-    private static String JoinGame(String[] commands){
-        if (commands.length >= 3)
-            try{
+    private static String joinGame(String[] commands){
+        if (commands.length >= 3) {
+            try {
                 Integer localGameID = Integer.parseInt(commands[1]);
                 Integer remoteGameID = IDMap.get(localGameID);
                 String playerColor = commands[2].toUpperCase();
                 JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, remoteGameID);
-                HttpResponse<String> response = serverFacade.JoinGame(joinGameRequest, myAuthToken);
+                HttpResponse<String> response = serverFacade.joinGame(joinGameRequest, myAuthToken);
                 if (response.statusCode() == 200) {
-                    if (playerColor.equals("BLACK")){
+                    if (playerColor.equals("BLACK")) {
                         isBlackMap.put(localGameID, true);
                     }
                     return "Joined game";
-                }
-                else{
+                } else {
                     ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
                     return errorMessage.message();
                 }
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 return e.getMessage();
             }
+        }
         else{
             return "Must provide a GameID and Color.";
         }
     }
 
-    private static String ObserveGame(String[] commands){
-        if (commands.length >= 2)
-            try{
+    private static String observeGame(String[] commands){
+        if (commands.length >= 2) {
+            try {
                 //Observe game not fully implemented yet.
                 //The server backend isn't even built to send a game
                 //from the database yet.
                 ChessGame newGame = new ChessGame();
                 return chessGameDisplay(newGame, isBlackMap.get(Integer.parseInt(commands[1])));
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 return e.getMessage();
             }
+        }
         else{
             return "Must provide a GameID and Color.";
         }
