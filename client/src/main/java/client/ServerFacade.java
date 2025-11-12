@@ -1,7 +1,6 @@
 package client;
 
 import com.google.gson.Gson;
-import datamodel.JoinGameRequest;
 import model.GameData;
 import model.UserData;
 
@@ -67,7 +66,7 @@ public class ServerFacade {
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
-    public HttpResponse<String> JoinGame(JoinGameRequest givenJoinRequest, String givenAuthToken) throws IOException, InterruptedException, URISyntaxException{
+    public HttpResponse<String> JoinGame(JoinRequest givenJoinRequest, String givenAuthToken) throws IOException, InterruptedException, URISyntaxException{
         var jsonBody = new Gson().toJson(givenJoinRequest);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/game"))
