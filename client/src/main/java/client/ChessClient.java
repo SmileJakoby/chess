@@ -274,8 +274,8 @@ public class ChessClient {
                 Integer localGameID = Integer.parseInt(commands[1]);
                 Integer remoteGameID = IDMap.get(localGameID);
                 String playerColor = commands[2].toUpperCase();
-                JoinRequest joinRequest = new JoinRequest(playerColor, remoteGameID);
-                HttpResponse<String> response = serverFacade.JoinGame(joinRequest, myAuthToken);
+                JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, remoteGameID);
+                HttpResponse<String> response = serverFacade.JoinGame(joinGameRequest, myAuthToken);
                 if (response.statusCode() == 200) {
                     if (playerColor.equals("BLACK")){
                         isBlackMap.put(localGameID, true);

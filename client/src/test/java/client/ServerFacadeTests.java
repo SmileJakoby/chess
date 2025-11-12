@@ -149,8 +149,8 @@ public class ServerFacadeTests {
         var response2 = facade.CreateGame(gameData1, registerResponse.authToken());
         assertNotNull(response2);
         CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), CreateGameResponse.class);
-        JoinRequest joinRequest = new JoinRequest("WHITE",createGameResponse.gameID());
-        var response3 = facade.JoinGame(joinRequest, registerResponse.authToken());
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
+        var response3 = facade.JoinGame(joinGameRequest, registerResponse.authToken());
         assertEquals(200, response3.statusCode());
     }
 
@@ -163,9 +163,9 @@ public class ServerFacadeTests {
         GameData gameData1 = new GameData(null,null,null,"JoinGame2",null);
         var response2 = facade.CreateGame(gameData1, registerResponse.authToken());
         CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), CreateGameResponse.class);
-        JoinRequest joinRequest = new JoinRequest("WHITE",createGameResponse.gameID());
-        facade.JoinGame(joinRequest, registerResponse.authToken());
-        var response3 = facade.JoinGame(joinRequest, registerResponse.authToken());
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
+        facade.JoinGame(joinGameRequest, registerResponse.authToken());
+        var response3 = facade.JoinGame(joinGameRequest, registerResponse.authToken());
         assertEquals(403, response3.statusCode());
     }
 }
