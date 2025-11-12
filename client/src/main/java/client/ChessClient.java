@@ -1,10 +1,11 @@
 package client;
 
+import ClientSideDataModel.*;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
-import datamodel.*;
+import ClientSideDataModel.*;
 import model.GameData;
 import model.UserData;
 

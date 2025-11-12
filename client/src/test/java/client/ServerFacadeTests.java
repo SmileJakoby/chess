@@ -1,7 +1,7 @@
 package client;
 
+import ClientSideDataModel.JoinGameRequest;
 import com.google.gson.Gson;
-import datamodel.*;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.*;
@@ -41,7 +41,7 @@ public class ServerFacadeTests {
     void registerPositive() throws Exception {
         UserData request = new UserData("registerPlayer", "password", "p1@email.com");
         var response = facade.register(request);
-        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        ClientSideDataModel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), ClientSideDataModel.RegisterResponse.class);
         assertNotNull(registerResponse.authToken());
         assertTrue(registerResponse.authToken().length() > 10);
     }
@@ -60,7 +60,7 @@ public class ServerFacadeTests {
         var response = facade.register(request);
         request = new UserData("loginPlayer", "password", "p1@email.com");
         response = facade.login(request);
-        LoginResponse loginResponse = new Gson().fromJson(response.body(), LoginResponse.class);
+        ClientSideDataModel.LoginResponse loginResponse = new Gson().fromJson(response.body(), ClientSideDataModel.LoginResponse.class);
         assertNotNull(loginResponse.authToken());
         assertTrue(loginResponse.authToken().length() > 10);
     }
@@ -78,7 +78,7 @@ public class ServerFacadeTests {
     void logoutPositive() throws Exception {
         UserData request = new UserData("logoutPlayer", "password", "p1@email.com");
         var response = facade.register(request);
-        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        ClientSideDataModel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), ClientSideDataModel.RegisterResponse.class);
         var response2 = facade.logout(registerResponse.authToken());
         assertNotNull(response2);
         assertEquals(200, response2.statusCode());
@@ -95,7 +95,7 @@ public class ServerFacadeTests {
     void createGamePositive() throws Exception {
         UserData request = new UserData("createGamePlayer", "password", "p1@email.com");
         var response = facade.register(request);
-        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        ClientSideDataModel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), ClientSideDataModel.RegisterResponse.class);
         GameData gameData = new GameData(null,null,null,"It'sChessTime",null);
         var response2 = facade.createGame(gameData, registerResponse.authToken());
         assertNotNull(response2);
@@ -107,7 +107,7 @@ public class ServerFacadeTests {
     void createGameNegative() throws Exception {
         UserData request = new UserData("createGamePlayer2", "password", "p1@email.com");
         var response = facade.register(request);
-        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        ClientSideDataModel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), ClientSideDataModel.RegisterResponse.class);
         GameData gameData = new GameData(null,null,null,"It'sNotChessTime",null);
         facade.createGame(gameData, registerResponse.authToken());
         var response2 = facade.createGame(gameData, registerResponse.authToken());
@@ -119,7 +119,7 @@ public class ServerFacadeTests {
     void listGamesPositive() throws Exception {
         UserData request = new UserData("listGamePlayer", "password", "p1@email.com");
         var response = facade.register(request);
-        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        ClientSideDataModel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), ClientSideDataModel.RegisterResponse.class);
         GameData gameData1 = new GameData(null,null,null,"FirstGame",null);
         facade.createGame(gameData1, registerResponse.authToken());
         GameData gameData2 = new GameData(null,null,null,"SecondGame",null);
@@ -128,7 +128,7 @@ public class ServerFacadeTests {
         facade.createGame(gameData3, registerResponse.authToken());
         var response2 = facade.listGames(registerResponse.authToken());
         assertEquals(200, response2.statusCode());
-        GamesListResponse gamesListResponse = new Gson().fromJson(response2.body(), GamesListResponse.class);
+        ClientSideDataModel.GamesListResponse gamesListResponse = new Gson().fromJson(response2.body(), ClientSideDataModel.GamesListResponse.class);
         assertTrue(gamesListResponse.games().length >= 3);
     }
     @Test
@@ -143,12 +143,12 @@ public class ServerFacadeTests {
     void joinPositive() throws Exception {
         UserData request = new UserData("joinGamePlayer", "password", "p1@email.com");
         var response = facade.register(request);
-        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        ClientSideDataModel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), ClientSideDataModel.RegisterResponse.class);
         GameData gameData1 = new GameData(null,null,null,"JoinGame",null);
         var response2 = facade.createGame(gameData1, registerResponse.authToken());
         assertNotNull(response2);
-        CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), CreateGameResponse.class);
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
+        ClientSideDataModel.CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), ClientSideDataModel.CreateGameResponse.class);
+        ClientSideDataModel.JoinGameRequest joinGameRequest = new ClientSideDataModel.JoinGameRequest("WHITE",createGameResponse.gameID());
         var response3 = facade.joinGame(joinGameRequest, registerResponse.authToken());
         assertEquals(200, response3.statusCode());
     }
@@ -158,11 +158,11 @@ public class ServerFacadeTests {
     void joinNegative() throws Exception {
         UserData request = new UserData("joinGamePlayer2", "password", "p1@email.com");
         var response = facade.register(request);
-        RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
+        ClientSideDataModel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), ClientSideDataModel.RegisterResponse.class);
         GameData gameData1 = new GameData(null,null,null,"JoinGame2",null);
         var response2 = facade.createGame(gameData1, registerResponse.authToken());
-        CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), CreateGameResponse.class);
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
+        ClientSideDataModel.CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), ClientSideDataModel.CreateGameResponse.class);
+        ClientSideDataModel.JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
         facade.joinGame(joinGameRequest, registerResponse.authToken());
         var response3 = facade.joinGame(joinGameRequest, registerResponse.authToken());
         assertEquals(403, response3.statusCode());
