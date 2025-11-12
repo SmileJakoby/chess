@@ -22,6 +22,7 @@ public class ChessClient {
 
     private static final int LOGGED_OUT = 0;
     private static final int LOGGED_IN = 1;
+    private static final int IN_GAME = 2;
     private static final ServerFacade SERVER_FACADE = new ServerFacade();
     private static boolean hasListed = false;
 
@@ -32,6 +33,7 @@ public class ChessClient {
 
     private static final Map<Integer,Integer> ID_MAP = new HashMap<>();
     private static final Map<Integer, Boolean> IS_BLACK_MAP = new HashMap<>();
+    private static final Map<Integer, Boolean> IS_WHITE_MAP = new HashMap<>();
 
     public ChessClient(String givenServerUrl){
         SERVER_FACADE.setServerURL(givenServerUrl);
@@ -47,6 +49,9 @@ public class ChessClient {
             }
             if (authState == LOGGED_IN) {
                 System.out.print("[LOGGED IN] >>> ");
+            }
+            if (authState == IN_GAME) {
+                System.out.print("[IN GAME] >>> ");
             }
             String line = inputScanner.nextLine();
 
@@ -93,6 +98,14 @@ public class ChessClient {
                     return observeGame(commands);
             }
         }
+        if (authState == IN_GAME) {
+            switch (commands[0]) {
+                case "help":
+                    return printHelp();
+                case "leave":
+                    return leaveGame();
+            }
+        }
         return "Unrecognized command";
     }
     private static String printHelp(){
@@ -106,7 +119,7 @@ public class ChessClient {
                     + "  " + SET_TEXT_COLOR_BLUE + "quit"
                     + SET_TEXT_COLOR_MAGENTA + " - exit the program." + SET_TEXT_COLOR_WHITE);
         }
-        else {
+        if (authState == LOGGED_IN) {
             return ("  " + SET_TEXT_COLOR_BLUE + "help"
                     + SET_TEXT_COLOR_MAGENTA + " - see a list of available commands.\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "logout"
@@ -120,6 +133,16 @@ public class ChessClient {
                     "  " + SET_TEXT_COLOR_BLUE + "observe <ID>"
                     + SET_TEXT_COLOR_MAGENTA + " - Join a game as an observer." + SET_TEXT_COLOR_WHITE);
         }
+        if (authState == IN_GAME){
+            return ("  " + SET_TEXT_COLOR_BLUE + "help"
+                    + SET_TEXT_COLOR_MAGENTA + " - see a list of available commands.\n" +
+                    "  " + SET_TEXT_COLOR_BLUE + "leave"
+                    + SET_TEXT_COLOR_MAGENTA + " - Leave the game. Does not count as a resign.\n" +
+                    "  " + SET_TEXT_COLOR_BLUE + "resign"
+                    + SET_TEXT_COLOR_MAGENTA + " - Forfeit; surrender; give up; admit defeat; lose all masculinity."
+                    + SET_TEXT_COLOR_WHITE);
+        }
+        return "Current state is unknown. The user should never see this message";
     }
     private static String register(String[] commands){
         if (commands.length >= 4) {
@@ -204,7 +227,11 @@ public class ChessClient {
                 HttpResponse<String> response = SERVER_FACADE.createGame(newGame, myAuthToken);
                 if (response.statusCode() == 200) {
                     CreateGameResponse createGameResponse = new Gson().fromJson(response.body(), CreateGameResponse.class);
-                    return "Created game with ID of " + createGameResponse.gameID();
+                    ID_MAP.put(ID_MAP.size()+1, createGameResponse.gameID());
+                    IS_BLACK_MAP.put(ID_MAP.size(), false);
+                    IS_WHITE_MAP.put(ID_MAP.size(), false);
+                    hasListed = true;
+                    return "Created game with ID of " + (ID_MAP.size());
                 } else {
                     ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
                     return errorMessage.message();
@@ -226,6 +253,7 @@ public class ChessClient {
                 StringBuilder allGamesListStringBuilder = new StringBuilder();
                 ID_MAP.clear();
                 IS_BLACK_MAP.clear();
+                IS_WHITE_MAP.clear();
                 for (int i = 0; i < gamesListResponse.games().length; i++) {
                     var jsonBody = new Gson().toJson(gamesListResponse.games()[i]);
                     GameResponse gameResponse = new Gson().fromJson(jsonBody, GameResponse.class);
@@ -254,6 +282,12 @@ public class ChessClient {
                     else{
                         IS_BLACK_MAP.put(i+1, false);
                     }
+                    if (gameResponse.whiteUsername() != null &&gameResponse.whiteUsername().equals(myUserName)) {
+                        IS_WHITE_MAP.put(i+1, true);
+                    }
+                    else{
+                        IS_WHITE_MAP.put(i+1, false);
+                    }
                 }
                 hasListed = true;
                 return allGamesListStringBuilder.toString();
@@ -275,15 +309,26 @@ public class ChessClient {
         if (commands.length >= 3) {
             try {
                 Integer localGameID = Integer.parseInt(commands[1]);
+                if (!ID_MAP.containsKey(localGameID)){
+                    return "Invalid GameID.";
+                }
                 Integer remoteGameID = ID_MAP.get(localGameID);
                 String playerColor = commands[2].toUpperCase();
+                if (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")){
+                    return "Invalid color. Choose White or Black";
+                }
                 JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, remoteGameID);
                 HttpResponse<String> response = SERVER_FACADE.joinGame(joinGameRequest, myAuthToken);
                 if (response.statusCode() == 200) {
                     if (playerColor.equals("BLACK")) {
                         IS_BLACK_MAP.put(localGameID, true);
                     }
-                    return "Joined game";
+                    if (playerColor.equals("WHITE")) {
+                        IS_WHITE_MAP.put(localGameID, true);
+                    }
+                    authState = IN_GAME;
+                    ChessGame joinedGame = new ChessGame();
+                    return "Joined game" + "\n" + chessGameDisplay(joinedGame, IS_BLACK_MAP.get(localGameID), IS_WHITE_MAP.get(localGameID));
                 } else {
                     ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
                     return errorMessage.message();
@@ -299,7 +344,7 @@ public class ChessClient {
 
     private static String observeGame(String[] commands){
         if (!hasListed){
-            return "Unknown GameID. Make sure to use the command 'list' before trying to join or observe.";
+            return "Unknown GameID. Use the command 'list' or 'create' before trying to join or observe.";
         }
         if (commands.length >= 2) {
             try {
@@ -307,7 +352,8 @@ public class ChessClient {
                 //The server backend isn't even built to send a game
                 //from the database yet.
                 ChessGame newGame = new ChessGame();
-                return chessGameDisplay(newGame, IS_BLACK_MAP.get(Integer.parseInt(commands[1])));
+                authState = IN_GAME;
+                return chessGameDisplay(newGame, IS_BLACK_MAP.get(Integer.parseInt(commands[1])), IS_WHITE_MAP.get(Integer.parseInt(commands[1])));
             } catch (Exception e) {
                 return e.getMessage();
             }
@@ -317,7 +363,12 @@ public class ChessClient {
         }
     }
 
-    private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack){
+    private static String leaveGame(){
+        authState = LOGGED_IN;
+        return "Left game";
+    }
+
+    private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite){
         StringBuilder boardBuilder = new StringBuilder();
         String rowString = "    a  b  c  d  e  f  g  h    ";
         int iStartingValue = 8;
@@ -327,7 +378,7 @@ public class ChessClient {
         int jStoppingValue = 9;
         int jIncrementer = 1;
 
-        if (isBlack){
+        if (isBlack && !isWhite){
             rowString = "    h  g  f  e  d  c  b  a    ";
             jStartingValue = 8;
             jStoppingValue = 0;
