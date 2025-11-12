@@ -327,92 +327,47 @@ public class ChessClient {
             iStoppingValue = 9;
             iIncrementer = 1;
         }
-        if (true) {
+        boardBuilder
+                .append(SET_BG_COLOR_LIGHT_GREY)
+                .append(SET_TEXT_COLOR_BLACK)
+                .append(rowString)
+                .append(RESET_BG_COLOR)
+                .append("\n");
+
+        for (int i = iStartingValue; i != iStoppingValue; i += iIncrementer) {
             boardBuilder
                     .append(SET_BG_COLOR_LIGHT_GREY)
                     .append(SET_TEXT_COLOR_BLACK)
-                    .append(rowString)
-                    .append(RESET_BG_COLOR)
-                    .append("\n");
-
-            for (int i = iStartingValue; i != iStoppingValue; i += iIncrementer) {
-                boardBuilder
-                        .append(SET_BG_COLOR_LIGHT_GREY)
-                        .append(SET_TEXT_COLOR_BLACK)
-                        .append(" ")
-                        .append(i)
-                        .append(" ")
-                        .append(RESET_BG_COLOR);
-                for (int j = jStartingValue; j != jStoppingValue; j += jIncrementer) {
-                    String squareColor = SET_BG_COLOR_WHITE;
-                    if ((i + j) % 2 == 0) {
-                        squareColor = SET_BG_COLOR_BLACK;
-                    }
-                    boardBuilder
-                            .append(squareColor)
-                            .append(" ")
-                            .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
-                            .append(" ");
+                    .append(" ")
+                    .append(i)
+                    .append(" ")
+                    .append(RESET_BG_COLOR);
+            for (int j = jStartingValue; j != jStoppingValue; j += jIncrementer) {
+                String squareColor = SET_BG_COLOR_WHITE;
+                if ((i + j) % 2 == 0) {
+                    squareColor = SET_BG_COLOR_BLACK;
                 }
                 boardBuilder
-                        .append(SET_BG_COLOR_LIGHT_GREY)
-                        .append(SET_TEXT_COLOR_BLACK)
+                        .append(squareColor)
                         .append(" ")
-                        .append(i)
-                        .append(" ")
-                        .append(RESET_BG_COLOR)
-                        .append("\n");
+                        .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
+                        .append(" ");
             }
             boardBuilder
                     .append(SET_BG_COLOR_LIGHT_GREY)
                     .append(SET_TEXT_COLOR_BLACK)
-                    .append(rowString)
+                    .append(" ")
+                    .append(i)
+                    .append(" ")
                     .append(RESET_BG_COLOR)
                     .append("\n");
         }
-//        else {
-//            boardBuilder
-//                    .append(SET_BG_COLOR_LIGHT_GREY)
-//                    .append(SET_TEXT_COLOR_BLACK)
-//                    .append(rowString)
-//                    .append(RESET_BG_COLOR)
-//                    .append("\n");
-//
-//            for (int i = 1; i <= 8; i++) {
-//                boardBuilder
-//                        .append(SET_BG_COLOR_LIGHT_GREY)
-//                        .append(SET_TEXT_COLOR_BLACK)
-//                        .append(" ")
-//                        .append(i)
-//                        .append(" ")
-//                        .append(RESET_BG_COLOR);
-//                for (int j = 8; j >= 1; j--) {
-//                    String squareColor = SET_BG_COLOR_WHITE;
-//                    if ((i + j) % 2 == 0) {
-//                        squareColor = SET_BG_COLOR_BLACK;
-//                    }
-//                    boardBuilder
-//                            .append(squareColor)
-//                            .append(" ")
-//                            .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
-//                            .append(" ");
-//                }
-//                boardBuilder
-//                        .append(SET_BG_COLOR_LIGHT_GREY)
-//                        .append(SET_TEXT_COLOR_BLACK)
-//                        .append(" ")
-//                        .append(i)
-//                        .append(" ")
-//                        .append(RESET_BG_COLOR)
-//                        .append("\n");
-//            }
-//            boardBuilder
-//                    .append(SET_BG_COLOR_LIGHT_GREY)
-//                    .append(SET_TEXT_COLOR_BLACK)
-//                    .append(rowString)
-//                    .append(RESET_BG_COLOR)
-//                    .append("\n");
-//        }
+        boardBuilder
+                .append(SET_BG_COLOR_LIGHT_GREY)
+                .append(SET_TEXT_COLOR_BLACK)
+                .append(rowString)
+                .append(RESET_BG_COLOR)
+                .append("\n");
         return boardBuilder.toString();
     }
 
