@@ -15,7 +15,7 @@ import java.net.http.HttpResponse;
 
 public class ServerFacade {
     public static String serverUrl = "";
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
     public void setServerURL(String serverURL) {
         serverUrl = serverURL;
@@ -28,7 +28,7 @@ public class ServerFacade {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json")
                 .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
     public HttpResponse<String> login(UserData givenUserData) throws URISyntaxException, IOException, InterruptedException {
         var jsonBody = new Gson().toJson(givenUserData);
@@ -37,7 +37,7 @@ public class ServerFacade {
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json")
                 .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
     public HttpResponse<String> logout(String givenAuthToken) throws URISyntaxException, IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
@@ -46,7 +46,7 @@ public class ServerFacade {
                 .header("Content-Type", "application/json")
                 .header("authorization", givenAuthToken)
                 .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
     public HttpResponse<String> createGame(GameData givenGame, String givenAuthToken) throws IOException, InterruptedException, URISyntaxException {
         var jsonBody = new Gson().toJson(givenGame);
@@ -56,7 +56,7 @@ public class ServerFacade {
                 .header("Content-Type", "application/json")
                 .header("authorization", givenAuthToken)
                 .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
     public HttpResponse<String> listGames(String givenAuthToken) throws IOException, InterruptedException, URISyntaxException{
         HttpRequest request = HttpRequest.newBuilder()
@@ -65,7 +65,7 @@ public class ServerFacade {
                 .header("Content-Type", "application/json")
                 .header("authorization", givenAuthToken)
                 .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
     public HttpResponse<String> joinGame(JoinGameRequest givenJoinGameRequest, String givenAuthToken)
             throws IOException, InterruptedException, URISyntaxException{
@@ -76,17 +76,15 @@ public class ServerFacade {
                 .header("Content-Type", "application/json")
                 .header("authorization", givenAuthToken)
                 .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
-    public HttpResponse<String> ObserveGame(UserData request){
-        //To be implemented in phase 6.
-        return null;
-    }
+    //Observe game needs to be implemented in phase 6
+
     public HttpResponse<String> clearDatabase() throws URISyntaxException, IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(serverUrl + "/db"))
                 .DELETE()
                 .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
 }

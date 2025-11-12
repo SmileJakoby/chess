@@ -21,18 +21,18 @@ public class ChessClient {
 
     private static final int LOGGED_OUT = 0;
     private static final int LOGGED_IN = 1;
-    private static final ServerFacade serverFacade = new ServerFacade();
+    private static final ServerFacade SERVER_FACADE = new ServerFacade();
 
     private static String myAuthToken = "";
 
     private static int authState = LOGGED_OUT;
     private static String myUserName = "";
 
-    private static final Map<Integer,Integer> IDMap = new HashMap<>();
-    private static final Map<Integer, Boolean> isBlackMap = new HashMap<>();
+    private static final Map<Integer,Integer> ID_MAP = new HashMap<>();
+    private static final Map<Integer, Boolean> IS_BLACK_MAP = new HashMap<>();
 
     public ChessClient(String givenServerUrl){
-        serverFacade.setServerURL(givenServerUrl);
+        SERVER_FACADE.setServerURL(givenServerUrl);
     }
     public static void run() {
         Scanner inputScanner = new Scanner(System.in);
@@ -123,7 +123,7 @@ public class ChessClient {
         if (commands.length >= 4) {
             try {
                 UserData newUser = new UserData(commands[1], commands[3], commands[2]);
-                HttpResponse<String> response = serverFacade.register(newUser);
+                HttpResponse<String> response = SERVER_FACADE.register(newUser);
                 if (response.statusCode() == 200) {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
@@ -147,7 +147,7 @@ public class ChessClient {
         if (commands.length >= 3) {
             try {
                 UserData newUser = new UserData(commands[1], null, commands[2]);
-                HttpResponse<String> response = serverFacade.login(newUser);
+                HttpResponse<String> response = SERVER_FACADE.login(newUser);
                 if (response.statusCode() == 200) {
                     RegisterResponse registerResponse = new Gson().fromJson(response.body(), RegisterResponse.class);
                     myAuthToken = registerResponse.authToken();
@@ -169,7 +169,7 @@ public class ChessClient {
 
     private static String logout(){
         try{
-            HttpResponse<String> response = serverFacade.logout(myAuthToken);
+            HttpResponse<String> response = SERVER_FACADE.logout(myAuthToken);
             if (response.statusCode() == 200) {
                 myAuthToken = "";
                 authState = LOGGED_OUT;
@@ -199,7 +199,7 @@ public class ChessClient {
                 }
                 String fullName = fullNameBuilder.toString();
                 GameData newGame = new GameData(null, null, null, fullName, null);
-                HttpResponse<String> response = serverFacade.createGame(newGame, myAuthToken);
+                HttpResponse<String> response = SERVER_FACADE.createGame(newGame, myAuthToken);
                 if (response.statusCode() == 200) {
                     CreateGameResponse createGameResponse = new Gson().fromJson(response.body(), CreateGameResponse.class);
                     return "Created game with ID of " + createGameResponse.gameID();
@@ -218,12 +218,12 @@ public class ChessClient {
 
     public static String listGames(){
         try{
-            HttpResponse<String> response = serverFacade.listGames(myAuthToken);
+            HttpResponse<String> response = SERVER_FACADE.listGames(myAuthToken);
             if (response.statusCode() == 200) {
                 GamesListResponse gamesListResponse = new Gson().fromJson(response.body(), GamesListResponse.class);
                 StringBuilder allGamesListStringBuilder = new StringBuilder();
-                IDMap.clear();
-                isBlackMap.clear();
+                ID_MAP.clear();
+                IS_BLACK_MAP.clear();
                 for (int i = 0; i < gamesListResponse.games().length; i++) {
                     var jsonBody = new Gson().toJson(gamesListResponse.games()[i]);
                     GameResponse gameResponse = new Gson().fromJson(jsonBody, GameResponse.class);
@@ -245,12 +245,12 @@ public class ChessClient {
                             .append(SET_TEXT_COLOR_MAGENTA)
                             .append(gameResponse.blackUsername())
                             .append("\n");
-                    IDMap.put(i+1, gameResponse.gameID());
+                    ID_MAP.put(i+1, gameResponse.gameID());
                     if (gameResponse.blackUsername() != null &&gameResponse.blackUsername().equals(myUserName)) {
-                        isBlackMap.put(i+1, true);
+                        IS_BLACK_MAP.put(i+1, true);
                     }
                     else{
-                        isBlackMap.put(i+1, false);
+                        IS_BLACK_MAP.put(i+1, false);
                     }
                 }
                 return allGamesListStringBuilder.toString();
@@ -269,13 +269,13 @@ public class ChessClient {
         if (commands.length >= 3) {
             try {
                 Integer localGameID = Integer.parseInt(commands[1]);
-                Integer remoteGameID = IDMap.get(localGameID);
+                Integer remoteGameID = ID_MAP.get(localGameID);
                 String playerColor = commands[2].toUpperCase();
                 JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, remoteGameID);
-                HttpResponse<String> response = serverFacade.joinGame(joinGameRequest, myAuthToken);
+                HttpResponse<String> response = SERVER_FACADE.joinGame(joinGameRequest, myAuthToken);
                 if (response.statusCode() == 200) {
                     if (playerColor.equals("BLACK")) {
-                        isBlackMap.put(localGameID, true);
+                        IS_BLACK_MAP.put(localGameID, true);
                     }
                     return "Joined game";
                 } else {
@@ -298,7 +298,7 @@ public class ChessClient {
                 //The server backend isn't even built to send a game
                 //from the database yet.
                 ChessGame newGame = new ChessGame();
-                return chessGameDisplay(newGame, isBlackMap.get(Integer.parseInt(commands[1])));
+                return chessGameDisplay(newGame, IS_BLACK_MAP.get(Integer.parseInt(commands[1])));
             } catch (Exception e) {
                 return e.getMessage();
             }
@@ -310,15 +310,32 @@ public class ChessClient {
 
     private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack){
         StringBuilder boardBuilder = new StringBuilder();
-        if (!isBlack) {
+        String rowString = "    a  b  c  d  e  f  g  h    ";
+        int iStartingValue = 8;
+        int iStoppingValue = 0;
+        int iIncrementer = -1;
+        int jStartingValue = 1;
+        int jStoppingValue = 9;
+        int jIncrementer = 1;
+
+        if (isBlack){
+            rowString = "    h  g  f  e  d  c  b  a    ";
+            jStartingValue = 8;
+            jStoppingValue = 0;
+            jIncrementer = -1;
+            iStartingValue = 1;
+            iStoppingValue = 9;
+            iIncrementer = 1;
+        }
+        if (true) {
             boardBuilder
                     .append(SET_BG_COLOR_LIGHT_GREY)
                     .append(SET_TEXT_COLOR_BLACK)
-                    .append("    a  b  c  d  e  f  g  h    ")
+                    .append(rowString)
                     .append(RESET_BG_COLOR)
                     .append("\n");
 
-            for (int i = 8; i > 0; i--) {
+            for (int i = iStartingValue; i != iStoppingValue; i += iIncrementer) {
                 boardBuilder
                         .append(SET_BG_COLOR_LIGHT_GREY)
                         .append(SET_TEXT_COLOR_BLACK)
@@ -326,7 +343,7 @@ public class ChessClient {
                         .append(i)
                         .append(" ")
                         .append(RESET_BG_COLOR);
-                for (int j = 1; j <= 8; j++) {
+                for (int j = jStartingValue; j != jStoppingValue; j += jIncrementer) {
                     String squareColor = SET_BG_COLOR_WHITE;
                     if ((i + j) % 2 == 0) {
                         squareColor = SET_BG_COLOR_BLACK;
@@ -349,53 +366,53 @@ public class ChessClient {
             boardBuilder
                     .append(SET_BG_COLOR_LIGHT_GREY)
                     .append(SET_TEXT_COLOR_BLACK)
-                    .append("    a  b  c  d  e  f  g  h    ")
+                    .append(rowString)
                     .append(RESET_BG_COLOR)
                     .append("\n");
         }
-        else {
-            boardBuilder
-                    .append(SET_BG_COLOR_LIGHT_GREY)
-                    .append(SET_TEXT_COLOR_BLACK)
-                    .append("    h  g  f  e  d  c  b  a    ")
-                    .append(RESET_BG_COLOR)
-                    .append("\n");
-
-            for (int i = 1; i <= 8; i++) {
-                boardBuilder
-                        .append(SET_BG_COLOR_LIGHT_GREY)
-                        .append(SET_TEXT_COLOR_BLACK)
-                        .append(" ")
-                        .append(i)
-                        .append(" ")
-                        .append(RESET_BG_COLOR);
-                for (int j = 8; j >= 1; j--) {
-                    String squareColor = SET_BG_COLOR_WHITE;
-                    if ((i + j) % 2 == 0) {
-                        squareColor = SET_BG_COLOR_BLACK;
-                    }
-                    boardBuilder
-                            .append(squareColor)
-                            .append(" ")
-                            .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
-                            .append(" ");
-                }
-                boardBuilder
-                        .append(SET_BG_COLOR_LIGHT_GREY)
-                        .append(SET_TEXT_COLOR_BLACK)
-                        .append(" ")
-                        .append(i)
-                        .append(" ")
-                        .append(RESET_BG_COLOR)
-                        .append("\n");
-            }
-            boardBuilder
-                    .append(SET_BG_COLOR_LIGHT_GREY)
-                    .append(SET_TEXT_COLOR_BLACK)
-                    .append("    h  g  f  e  d  c  b  a    ")
-                    .append(RESET_BG_COLOR)
-                    .append("\n");
-        }
+//        else {
+//            boardBuilder
+//                    .append(SET_BG_COLOR_LIGHT_GREY)
+//                    .append(SET_TEXT_COLOR_BLACK)
+//                    .append(rowString)
+//                    .append(RESET_BG_COLOR)
+//                    .append("\n");
+//
+//            for (int i = 1; i <= 8; i++) {
+//                boardBuilder
+//                        .append(SET_BG_COLOR_LIGHT_GREY)
+//                        .append(SET_TEXT_COLOR_BLACK)
+//                        .append(" ")
+//                        .append(i)
+//                        .append(" ")
+//                        .append(RESET_BG_COLOR);
+//                for (int j = 8; j >= 1; j--) {
+//                    String squareColor = SET_BG_COLOR_WHITE;
+//                    if ((i + j) % 2 == 0) {
+//                        squareColor = SET_BG_COLOR_BLACK;
+//                    }
+//                    boardBuilder
+//                            .append(squareColor)
+//                            .append(" ")
+//                            .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
+//                            .append(" ");
+//                }
+//                boardBuilder
+//                        .append(SET_BG_COLOR_LIGHT_GREY)
+//                        .append(SET_TEXT_COLOR_BLACK)
+//                        .append(" ")
+//                        .append(i)
+//                        .append(" ")
+//                        .append(RESET_BG_COLOR)
+//                        .append("\n");
+//            }
+//            boardBuilder
+//                    .append(SET_BG_COLOR_LIGHT_GREY)
+//                    .append(SET_TEXT_COLOR_BLACK)
+//                    .append(rowString)
+//                    .append(RESET_BG_COLOR)
+//                    .append("\n");
+//        }
         return boardBuilder.toString();
     }
 
