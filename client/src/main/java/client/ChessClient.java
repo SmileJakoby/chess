@@ -39,7 +39,7 @@ public class ChessClient implements ServerMessageHandler {
     private static final Map<Integer, Boolean> IS_BLACK_MAP = new HashMap<>();
     private static final Map<Integer, Boolean> IS_WHITE_MAP = new HashMap<>();
 
-    private final WebSocketFacade ws;
+    private static WebSocketFacade ws = null;
     public ChessClient(String givenServerUrl) throws URISyntaxException, DeploymentException, IOException, ResponseException {
         SERVER_FACADE.setServerURL(givenServerUrl);
         ws = new WebSocketFacade(givenServerUrl, this);
@@ -109,10 +109,23 @@ public class ChessClient implements ServerMessageHandler {
             switch (commands[0]) {
                 case "help":
                     return printHelp();
+                case "redraw":
+                    return "Redraw not implemented";
                 case "leave":
                     return leaveGame();
+                case "move":
+                    return "Move not implemented";
+                case "resign":
+                    return "Resign not implemented";
+                case "highlight":
+                    return "Highlight not implemented";
             }
         }
+        //Redraw Chess Board
+        //Leave
+        //Make Move
+        //Resign
+        //Highlight Legal Moves
         return "Unrecognized command";
     }
     private static String printHelp(){
@@ -143,12 +156,19 @@ public class ChessClient implements ServerMessageHandler {
         if (authState == IN_GAME){
             return ("  " + SET_TEXT_COLOR_BLUE + "help"
                     + SET_TEXT_COLOR_MAGENTA + " - see a list of available commands.\n" +
+                    "  " + SET_TEXT_COLOR_BLUE + "redraw"
+                    + SET_TEXT_COLOR_MAGENTA + " - Redraw the chess board\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "leave"
                     + SET_TEXT_COLOR_MAGENTA + " - Leave the game. Does not count as a resign.\n" +
+                    "  " + SET_TEXT_COLOR_BLUE + "move <Start Position> <End Position>"
+                    + SET_TEXT_COLOR_MAGENTA + " - Make a move, moving a piece from one position to another.\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "resign"
-                    + SET_TEXT_COLOR_MAGENTA + " - Forfeit; surrender; give up; admit defeat; lose all masculinity."
+                    + SET_TEXT_COLOR_MAGENTA + " - Forfeit; surrender; give up; admit defeat; lose all masculinity.\n" +
+                    "  " + SET_TEXT_COLOR_BLUE + "Highlight <Position>"
+                    + SET_TEXT_COLOR_MAGENTA + " - Highlight all the legal moves of a piece."
                     + SET_TEXT_COLOR_WHITE);
         }
+
         return "Current state is unknown. The user should never see this message";
     }
     private static String register(String[] commands){
@@ -355,6 +375,8 @@ public class ChessClient implements ServerMessageHandler {
         }
         if (commands.length >= 2) {
             try {
+                //Send connect
+                ws.connectToGame(myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
                 //Observe game not fully implemented yet.
                 //The server backend isn't even built to send a game
                 //from the database yet.
@@ -371,8 +393,18 @@ public class ChessClient implements ServerMessageHandler {
     }
 
     private static String leaveGame(){
+        
         authState = LOGGED_IN;
         return "Left game";
+    }
+
+    //Redraw Chess Board
+    //Leave
+    //Make Move
+    //Resign
+    //Highlight Legal Moves
+    private static String redraw(){
+        return "will do later lol";
     }
 
     private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite){
@@ -489,6 +521,7 @@ public class ChessClient implements ServerMessageHandler {
         }
         return EMPTY;
     }
+
 
     @Override
     public void notify(ServerMessage serverMessage) {

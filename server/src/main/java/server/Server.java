@@ -42,7 +42,7 @@ public class Server {
         server.post("game",ctx->createGame(ctx));
         server.put("game",ctx->joinGame(ctx));
 
-        //WEBSOCKET CODE PORTION START
+
         server.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
                 ctx.enableAutomaticPings();
@@ -51,7 +51,7 @@ public class Server {
             ws.onMessage(ctx -> ctx.send("WebSocket response: " + ctx.message()));
             ws.onClose(ctx -> System.out.println("Websocket closed"));
         });
-        //WEBSOCKET CODE PORTION END
+
     }
 
     public int run(int desiredPort) {
@@ -193,7 +193,6 @@ public class Server {
             var joinRequest = serializer.fromJson(reqJsonBody, JoinGameRequest.class);
 
             gameService.joinGame(givenAuth, joinRequest.playerColor(), joinRequest.gameID());
-
             ctx.result("{}");
         }
         catch(UnauthorizedException ex){
@@ -217,8 +216,8 @@ public class Server {
     @OnWebSocketMessage
     public void onMessage(Session session, String msg){
         //deserialize WebSocket message from client
-        //var serializer = new Gson();
-        //UserGameCommand command = serializer.fromJson(msg, UserGameCommand.class);
+        var serializer = new Gson();
+        UserGameCommand command = serializer.fromJson(msg, UserGameCommand.class);
 
         // handle WebSocket message from client
         System.out.println("Received from " + session.toString() + ": " + msg);
