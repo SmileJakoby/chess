@@ -21,8 +21,15 @@ public class ServerMessage {
         NOTIFICATION
     }
 
-    public ServerMessage(ServerMessageType type) {
+    public ServerMessage(ServerMessageType type, String message) {
+
         this.serverMessageType = type;
+        if (type == ServerMessageType.NOTIFICATION){
+            this.message = message;
+        }
+        if (type == ServerMessageType.ERROR){
+            this.errorMessage = message;
+        }
     }
 
     public ServerMessageType getServerMessageType() {

@@ -23,6 +23,7 @@ public class ConnectionManager {
             if (c.isOpen()) {
                 if (!c.equals(excludeSession)) {
                     c.getRemote().sendString(msg);
+                    System.out.println("Sent Message");
                 }
             }
         }

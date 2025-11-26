@@ -16,6 +16,8 @@ public class UserGameCommand {
 
     private final Integer gameID;
 
+    private String username;
+
     public UserGameCommand(CommandType commandType, String authToken, Integer gameID) {
         this.commandType = commandType;
         this.authToken = authToken;
@@ -40,7 +42,12 @@ public class UserGameCommand {
     public Integer getGameID() {
         return gameID;
     }
-
+    public void setUsername(String givenUsername) {
+        username = givenUsername;
+    }
+    public String getUsername(){
+        return username;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) {

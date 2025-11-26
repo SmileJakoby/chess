@@ -525,6 +525,6 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notify(ServerMessage serverMessage) {
-
+        System.out.println("Received Server Message of type: " + serverMessage.getServerMessageType());
     }
 }

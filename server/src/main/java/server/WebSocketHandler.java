@@ -25,11 +25,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleMessage(WsMessageContext ctx) {
+    public void handleMessage(WsMessageContext ctx) throws IOException {
         System.out.println("Websocket message received: ");
         UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
         switch (userGameCommand.getCommandType()) {
-            //case ENTER -> enter(action.visitorName(), ctx.session);
+            case CONNECT -> connect(userGameCommand.getUsername(), ctx.session);
             //case EXIT -> exit(action.visitorName(), ctx.session);
         }
     }
@@ -39,12 +39,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-//    private void enter(String visitorName, Session session) throws IOException {
-//        connections.add(session);
-//        var message = String.format("%s is in the shop", visitorName);
-//        var notification = new Notification(Notification.Type.ARRIVAL, message);
-//        connections.broadcast(session, notification);
-//    }
+    private void connect(String givenUsername, Session session) throws IOException {
+        System.out.println("Got here");
+        connections.add(session);
+        var message = String.format("%s is in the game", givenUsername);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, serverMessage);
+    }
 //
 //    private void exit(String visitorName, Session session) throws IOException {
 //        var message = String.format("%s left the shop", visitorName);
