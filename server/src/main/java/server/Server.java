@@ -22,6 +22,7 @@ public class Server {
     private final SessionService sessionService;
     private final GameService gameService;
     private final DatabaseService databaseService;
+    private final WebSocketHandler webSocketHandler = new WebSocketHandler();
     public Server() {
         var dataAccess = new SQLDataAccess();
         userService = new UserService(dataAccess);
@@ -44,12 +45,9 @@ public class Server {
 
 
         server.ws("/ws", ws -> {
-            ws.onConnect(ctx -> {
-                ctx.enableAutomaticPings();
-                System.out.println("Websocket connected");
-            });
-            ws.onMessage(ctx -> ctx.send("WebSocket response: " + ctx.message()));
-            ws.onClose(ctx -> System.out.println("Websocket closed"));
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
         });
 
     }
