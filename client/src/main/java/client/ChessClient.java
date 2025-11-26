@@ -6,9 +6,15 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import ClientSideDataModel.*;
+import jakarta.websocket.*;
 import model.GameData;
 import model.UserData;
+import org.glassfish.tyrus.core.wsadl.model.Endpoint;
+import websocket.messages.ServerMessage;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -18,7 +24,7 @@ import static ui.EscapeSequences.*;
 import java.net.http.HttpResponse;
 
 
-public class ChessClient {
+public class ChessClient extends Endpoint {
 
     private static final int LOGGED_OUT = 0;
     private static final int LOGGED_IN = 1;
@@ -35,14 +41,36 @@ public class ChessClient {
     private static final Map<Integer, Boolean> IS_BLACK_MAP = new HashMap<>();
     private static final Map<Integer, Boolean> IS_WHITE_MAP = new HashMap<>();
 
-    public ChessClient(String givenServerUrl){
+    public Session session;
+    public URI uri;
+    public ChessClient(String givenServerUrl) throws URISyntaxException, DeploymentException, IOException {
         SERVER_FACADE.setServerURL(givenServerUrl);
+        uri = new URI(givenServerUrl);
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        this.session = container.connectToServer(this, uri);
+        this.session.addMessageHandler(new MessageHandler.Whole<String>() {
+            public void onMessage(String message){
+                System.out.println(message);
+//                try {
+//                    // deserialize WebSocket message from server
+//                    var serializer = new Gson();
+//                    ServerMessage command = serializer.fromJson(message, ServerMessage.class);
+//
+//                    // send WebSocket message to the observer?
+//                    //observer.notify(command);
+//                }
+//                catch (Exception e){
+//                    //observer.notify(new ErrorMessage(ex.getMessage()));
+//                }
+            }
+        });
     }
     public static void run() {
         Scanner inputScanner = new Scanner(System.in);
         System.out.println("♕ 240 Chess Client. Type 'help' to get started.");
 
         String result = "";
+
         while (!result.equals("Goodbye!")) {
             if (authState == LOGGED_OUT) {
                 System.out.print("[LOGGED OUT] >>> ");
@@ -481,5 +509,12 @@ public class ChessClient {
                 }
         }
         return EMPTY;
+    }
+    public void send(String msg) throws IOException {
+        this.session.getBasicRemote().sendText(msg);
+    }
+
+    public void onOpen(Session session, EndpointConfig endpointConfig){
+
     }
 }

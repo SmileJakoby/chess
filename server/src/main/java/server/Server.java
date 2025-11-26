@@ -5,12 +5,15 @@ import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
 import dataaccess.SQLDataAccess;
 import datamodel.JoinGameRequest;
+import jakarta.websocket.Session;
 import model.GameData;
 import model.UserData;
 import model.AuthData;
 import io.javalin.*;
 import io.javalin.http.Context;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import service.*;
+import websocket.commands.UserGameCommand;
 
 public class Server {
 
@@ -38,6 +41,17 @@ public class Server {
         server.get("game", ctx->listGames(ctx));
         server.post("game",ctx->createGame(ctx));
         server.put("game",ctx->joinGame(ctx));
+
+        //WEBSOCKET CODE PORTION START
+        server.ws("/ws", ws -> {
+            ws.onConnect(ctx -> {
+                ctx.enableAutomaticPings();
+                System.out.println("Websocket connected");
+            });
+            ws.onMessage(ctx -> ctx.send("WebSocket response: " + ctx.message()));
+            ws.onClose(ctx -> System.out.println("Websocket closed"));
+        });
+        //WEBSOCKET CODE PORTION END
     }
 
     public int run(int desiredPort) {
@@ -198,5 +212,16 @@ public class Server {
             var errorMsg = String.format("{ \"message\": \"Error: %s\" }", ex.getMessage());
             ctx.status(500).result(errorMsg);
         }
+    }
+
+    @OnWebSocketMessage
+    public void onMessage(Session session, String msg){
+        //deserialize WebSocket message from client
+        //var serializer = new Gson();
+        //UserGameCommand command = serializer.fromJson(msg, UserGameCommand.class);
+
+        // handle WebSocket message from client
+        System.out.println("Received from " + session.toString() + ": " + msg);
+
     }
 }
