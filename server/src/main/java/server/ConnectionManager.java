@@ -19,6 +19,7 @@ public class ConnectionManager {
 
     public void broadcast(Session excludeSession, ServerMessage serverMessage) throws IOException {
         String msg = serverMessage.toString();
+        System.out.println("broadcast: " + msg);
         for (Session c : connections.values()) {
             if (c.isOpen()) {
                 if (!c.equals(excludeSession)) {

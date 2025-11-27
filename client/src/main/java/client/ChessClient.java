@@ -376,7 +376,7 @@ public class ChessClient implements ServerMessageHandler {
         if (commands.length >= 2) {
             try {
                 //Send connect
-                ws.connectToGame(myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
+                ws.connectToGame(myUserName, myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
                 //Observe game not fully implemented yet.
                 //The server backend isn't even built to send a game
                 //from the database yet.
@@ -525,6 +525,8 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notify(ServerMessage serverMessage) {
+        System.out.println("Received Server Message");
         System.out.println("Received Server Message of type: " + serverMessage.getServerMessageType());
+        System.out.println("Received Server Message of: " + serverMessage);
     }
 }

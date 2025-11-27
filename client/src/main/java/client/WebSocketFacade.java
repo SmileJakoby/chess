@@ -27,12 +27,17 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    System.out.println("Received message: " + message);
-                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    serverMessageHandler.notify(serverMessage);
+                    try {
+                        ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                        serverMessageHandler.notify(serverMessage);
+                    }
+                    catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
+            System.out.println("Error: " + ex.getMessage());
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
 
@@ -42,9 +47,10 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void connectToGame(String authToken, Integer gameID) throws ResponseException {
+    public void connectToGame(String username, String authToken, Integer gameID) throws ResponseException {
         try {
             UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            command.setUsername(username);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
