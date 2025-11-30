@@ -1,6 +1,11 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
+import service.DatabaseService;
+import service.GameService;
 import websocket.ResponseException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
@@ -15,8 +20,12 @@ import websocket.messages.ServerMessage;
 import java.io.IOException;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
-
+    private final DataAccess dataAccess;
+    public WebSocketHandler(DataAccess givenDataAccess) {
+        dataAccess = givenDataAccess;
+    }
     private final ConnectionManager connections = new ConnectionManager();
+
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
@@ -25,7 +34,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleMessage(WsMessageContext ctx) throws IOException {
+    public void handleMessage(WsMessageContext ctx) throws IOException, DataAccessException {
         System.out.println("Websocket message received: ");
         UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
         switch (userGameCommand.getCommandType()) {
@@ -39,7 +48,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(String givenUsername, String givenPlayerColor, Integer gameID, Session session) throws IOException {
+    private void connect(String givenUsername, String givenPlayerColor, Integer gameID, Session session) throws IOException, DataAccessException {
         connections.add(gameID, session);
         String message;
         if (givenPlayerColor != null) {
@@ -50,6 +59,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, gameID, serverMessage);
+        String gameMessage = String.format("This message should include game of gameID %d", gameID);
+        var gameLoadMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
+        ChessGame foundGame = dataAccess.getGame(gameID).game();
+        gameLoadMessage.setGame(foundGame);
+        session.getRemote().sendString(gameLoadMessage.toString());
     }
 //
 //    private void exit(String visitorName, Session session) throws IOException {

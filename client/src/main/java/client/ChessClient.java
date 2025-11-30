@@ -34,6 +34,7 @@ public class ChessClient implements ServerMessageHandler {
 
     private static int authState = LOGGED_OUT;
     private static String myUserName = "";
+    private static Integer myCurrentGameID = -1;
 
     private static final Map<Integer,Integer> ID_MAP = new HashMap<>();
     private static final Map<Integer, Boolean> IS_BLACK_MAP = new HashMap<>();
@@ -355,6 +356,7 @@ public class ChessClient implements ServerMessageHandler {
                         IS_WHITE_MAP.put(localGameID, true);
                     }
                     authState = IN_GAME;
+                    myCurrentGameID = ID_MAP.get(Integer.parseInt(commands[1]));
                     ChessGame joinedGame = new ChessGame();
                     return "Joined game" + "\n" + chessGameDisplay(joinedGame, IS_BLACK_MAP.get(localGameID), IS_WHITE_MAP.get(localGameID));
                 } else {
@@ -377,13 +379,15 @@ public class ChessClient implements ServerMessageHandler {
         if (commands.length >= 2) {
             try {
                 //Send connect
+                myCurrentGameID = Integer.parseInt(commands[1]);
                 ws.connectToGame(myUserName, null, myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
+
                 //Observe game not fully implemented yet.
                 //The server backend isn't even built to send a game
                 //from the database yet.
-                ChessGame newGame = new ChessGame();
+                //ChessGame newGame = new ChessGame();
                 authState = IN_GAME;
-                return chessGameDisplay(newGame, IS_BLACK_MAP.get(Integer.parseInt(commands[1])), IS_WHITE_MAP.get(Integer.parseInt(commands[1])));
+                return "Fetching game...";
             } catch (Exception e) {
                 return e.getMessage();
             }
@@ -527,5 +531,9 @@ public class ChessClient implements ServerMessageHandler {
     @Override
     public void notify(ServerMessage serverMessage) {
         System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getMessage());
+        if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME && myCurrentGameID != -1){
+            System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID)));
+            System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
+        }
     }
 }

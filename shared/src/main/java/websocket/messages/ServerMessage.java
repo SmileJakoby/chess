@@ -24,7 +24,7 @@ public class ServerMessage {
 
     public ServerMessage(ServerMessageType type, String message) {
         this.serverMessageType = type;
-        if (type == ServerMessageType.NOTIFICATION){
+        if (type == ServerMessageType.NOTIFICATION || type == ServerMessageType.LOAD_GAME) {
             this.message = message;
         }
         if (type == ServerMessageType.ERROR){
@@ -44,6 +44,7 @@ public class ServerMessage {
     }
 
     public ChessGame getGame(){return this.game;}
+    public void setGame(ChessGame game){this.game = game;}
     @Override
     public boolean equals(Object o) {
         if (this == o) {

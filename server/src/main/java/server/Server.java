@@ -22,13 +22,14 @@ public class Server {
     private final SessionService sessionService;
     private final GameService gameService;
     private final DatabaseService databaseService;
-    private final WebSocketHandler webSocketHandler = new WebSocketHandler();
+    private final WebSocketHandler webSocketHandler;
     public Server() {
         var dataAccess = new SQLDataAccess();
         userService = new UserService(dataAccess);
         sessionService = new SessionService(dataAccess);
         gameService = new GameService(dataAccess);
         databaseService = new DatabaseService(dataAccess);
+        webSocketHandler = new WebSocketHandler(dataAccess);
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
 
