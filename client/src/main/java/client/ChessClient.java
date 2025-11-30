@@ -411,12 +411,22 @@ public class ChessClient implements ServerMessageHandler {
     }
 
     private static String resignGame(){
-        try {
-            ws.resignGame(myUserName, myAuthToken, ID_MAP.get(myCurrentGameID));
-        } catch (Exception e) {
-            return e.getMessage();
+        Scanner inputScanner = new Scanner(System.in);
+        System.out.println("Are you sure about that? [yes|no]");
+        String line = inputScanner.nextLine();
+        var commands = line.split(" ");
+        commands[0] = commands[0].toLowerCase();
+        if (commands[0].equals("yes")) {
+            try {
+                ws.resignGame(myUserName, myAuthToken, ID_MAP.get(myCurrentGameID));
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+            return "Resigned game";
         }
-        return "Resigned game";
+        else{
+            return "That wasn't yes, so I assume it was no.";
+        }
     }
 
     //Redraw Chess Board
