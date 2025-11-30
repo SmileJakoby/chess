@@ -530,7 +530,9 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notify(ServerMessage serverMessage) {
-        System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getMessage());
+        if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+            System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getMessage());
+        }
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME && myCurrentGameID != -1){
             myCurrentGame = serverMessage.getGame();
             System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID)));

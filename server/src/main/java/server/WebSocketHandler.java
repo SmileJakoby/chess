@@ -59,8 +59,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, gameID, serverMessage);
-        String gameMessage = String.format("This message should include game of gameID %d", gameID);
-        var gameLoadMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameMessage);
+        var gameLoadMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null);
         ChessGame foundGame = dataAccess.getGame(gameID).game();
         gameLoadMessage.setGame(foundGame);
         session.getRemote().sendString(gameLoadMessage.toString());
