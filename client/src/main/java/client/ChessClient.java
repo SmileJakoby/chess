@@ -35,6 +35,7 @@ public class ChessClient implements ServerMessageHandler {
     private static int authState = LOGGED_OUT;
     private static String myUserName = "";
     private static Integer myCurrentGameID = -1;
+    private static ChessGame myCurrentGame = new ChessGame();
 
     private static final Map<Integer,Integer> ID_MAP = new HashMap<>();
     private static final Map<Integer, Boolean> IS_BLACK_MAP = new HashMap<>();
@@ -111,7 +112,7 @@ public class ChessClient implements ServerMessageHandler {
                 case "help":
                     return printHelp();
                 case "redraw":
-                    return "Redraw not implemented";
+                    return redraw();
                 case "leave":
                     return leaveGame();
                 case "move":
@@ -348,7 +349,6 @@ public class ChessClient implements ServerMessageHandler {
                 JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, remoteGameID);
                 HttpResponse<String> response = SERVER_FACADE.joinGame(joinGameRequest, myAuthToken);
                 if (response.statusCode() == 200) {
-                    ws.connectToGame(myUserName, playerColor, myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
                     if (playerColor.equals("BLACK")) {
                         IS_BLACK_MAP.put(localGameID, true);
                     }
@@ -356,9 +356,9 @@ public class ChessClient implements ServerMessageHandler {
                         IS_WHITE_MAP.put(localGameID, true);
                     }
                     authState = IN_GAME;
-                    myCurrentGameID = ID_MAP.get(Integer.parseInt(commands[1]));
-                    ChessGame joinedGame = new ChessGame();
-                    return "Joined game" + "\n" + chessGameDisplay(joinedGame, IS_BLACK_MAP.get(localGameID), IS_WHITE_MAP.get(localGameID));
+                    myCurrentGameID = Integer.parseInt(commands[1]);
+                    ws.connectToGame(myUserName, playerColor, myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
+                    return "Joined game. Fetching data...";
                 } else {
                     ErrorMessage errorMessage = new Gson().fromJson(response.body(), ErrorMessage.class);
                     return errorMessage.message();
@@ -400,6 +400,7 @@ public class ChessClient implements ServerMessageHandler {
     private static String leaveGame(){
         
         authState = LOGGED_IN;
+        myCurrentGameID = -1;
         return "Left game";
     }
 
@@ -409,7 +410,7 @@ public class ChessClient implements ServerMessageHandler {
     //Resign
     //Highlight Legal Moves
     private static String redraw(){
-        return "will do later lol";
+        return chessGameDisplay(myCurrentGame, IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID));
     }
 
     private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite){
@@ -527,11 +528,11 @@ public class ChessClient implements ServerMessageHandler {
         return EMPTY;
     }
 
-
     @Override
     public void notify(ServerMessage serverMessage) {
         System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getMessage());
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME && myCurrentGameID != -1){
+            myCurrentGame = serverMessage.getGame();
             System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID)));
             System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
         }
