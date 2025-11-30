@@ -15,6 +15,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import service.*;
 import websocket.commands.UserGameCommand;
 
+
+
 public class Server {
 
     private final Javalin server;
@@ -30,6 +32,7 @@ public class Server {
         gameService = new GameService(dataAccess);
         databaseService = new DatabaseService(dataAccess);
         webSocketHandler = new WebSocketHandler(dataAccess);
+
         server = Javalin.create(config -> config.staticFiles.add("web"));
 
 

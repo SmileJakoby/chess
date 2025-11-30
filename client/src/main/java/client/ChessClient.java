@@ -118,7 +118,7 @@ public class ChessClient implements ServerMessageHandler {
                 case "move":
                     return "Move not implemented";
                 case "resign":
-                    return "Resign not implemented";
+                    return resignGame();
                 case "highlight":
                     return "Highlight not implemented";
             }
@@ -410,6 +410,15 @@ public class ChessClient implements ServerMessageHandler {
         return "Left game";
     }
 
+    private static String resignGame(){
+        try {
+            ws.resignGame(myUserName, myAuthToken, ID_MAP.get(myCurrentGameID));
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+        return "Resigned game";
+    }
+
     //Redraw Chess Board
     //Leave
     //Make Move
@@ -543,6 +552,9 @@ public class ChessClient implements ServerMessageHandler {
             myCurrentGame = serverMessage.getGame();
             System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID)));
             System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
+        }
+        if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+            System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getErrorMessage());
         }
     }
 }

@@ -19,6 +19,7 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
     private final DataAccess dataAccess;
@@ -26,7 +27,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         dataAccess = givenDataAccess;
     }
     private final ConnectionManager connections = new ConnectionManager();
-
+    private final HashSet<Integer> overGameIDs = new HashSet<>();
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
@@ -41,6 +42,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         switch (userGameCommand.getCommandType()) {
             case CONNECT -> connect(userGameCommand.getUsername(), userGameCommand.getPlayerColor(), userGameCommand.getGameID(), ctx.session);
             case LEAVE -> leave(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
+            case RESIGN -> resign(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
         }
     }
 
@@ -93,6 +95,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             if (safeBlackName.equals(givenUsername)) {
                 dataAccess.addPlayer(gameID, null, "BLACK");
             }
+        }
+    }
+    private void resign(String givenUsername, Integer gameID, Session session) throws IOException, DataAccessException {
+        if (!overGameIDs.contains(gameID)) {
+            String message;
+            message = String.format("%s has resigned, good game!", givenUsername);
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            connections.broadcast(null, gameID, serverMessage);
+            overGameIDs.add(gameID);
+            System.out.println("Over game IDs: " + overGameIDs);
+        }
+        else {
+            String message;
+            message = "Other player has already resigned";
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(serverMessage.toString());
         }
     }
 //

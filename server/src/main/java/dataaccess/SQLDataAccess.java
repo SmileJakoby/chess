@@ -248,6 +248,7 @@ public class SQLDataAccess implements DataAccess {
     }
     @Override
     public void updateGame(Integer gameID, GameData game) throws DataAccessException {
+        GameData oldGame = getGame(gameID);
         var statement = "UPDATE game SET game = ? WHERE gameid = ?";
         try{
             String json = new Gson().toJson(game.game());
