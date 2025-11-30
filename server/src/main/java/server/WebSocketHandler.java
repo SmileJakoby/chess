@@ -4,6 +4,7 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
+import model.GameData;
 import service.DatabaseService;
 import service.GameService;
 import websocket.ResponseException;
@@ -65,11 +66,34 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         session.getRemote().sendString(gameLoadMessage.toString());
     }
 //
-    private void leave(String givenUsername, Integer gameID, Session session) throws IOException {
+    private void leave(String givenUsername, Integer gameID, Session session) throws IOException, DataAccessException {
         var message = String.format("%s left the game", givenUsername);
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, gameID, serverMessage);
         connections.remove(gameID, session);
+        GameData gameData = dataAccess.getGame(gameID);
+        String safeWhiteName = gameData.whiteUsername();
+        if (safeWhiteName == null)
+        {
+            safeWhiteName = "";
+        }
+        String safeBlackName = gameData.blackUsername();
+        if (safeBlackName == null)
+        {
+            safeBlackName = "";
+        }
+        if (safeWhiteName.equals(givenUsername) && safeBlackName.equals(givenUsername)) {
+            dataAccess.addPlayer(gameID, null, "WHITE");
+            dataAccess.addPlayer(gameID, null, "BLACK");
+        }
+        else {
+            if (safeWhiteName.equals(givenUsername)) {
+                dataAccess.addPlayer(gameID, null, "WHITE");
+            }
+            if (safeBlackName.equals(givenUsername)) {
+                dataAccess.addPlayer(gameID, null, "BLACK");
+            }
+        }
     }
 //
 //    public void makeNoise(String petName, String sound) throws ResponseException {
