@@ -398,9 +398,15 @@ public class ChessClient implements ServerMessageHandler {
     }
 
     private static String leaveGame(){
-        
+        try {
+            ws.leaveGame(myUserName, myAuthToken, ID_MAP.get(myCurrentGameID));
+        } catch (Exception e) {
+            return e.getMessage();
+        }
         authState = LOGGED_IN;
         myCurrentGameID = -1;
+
+
         return "Left game";
     }
 

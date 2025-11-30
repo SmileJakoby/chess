@@ -39,7 +39,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
         switch (userGameCommand.getCommandType()) {
             case CONNECT -> connect(userGameCommand.getUsername(), userGameCommand.getPlayerColor(), userGameCommand.getGameID(), ctx.session);
-            //case EXIT -> exit(action.visitorName(), ctx.session);
+            case LEAVE -> leave(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
         }
     }
 
@@ -65,12 +65,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         session.getRemote().sendString(gameLoadMessage.toString());
     }
 //
-//    private void exit(String visitorName, Session session) throws IOException {
-//        var message = String.format("%s left the shop", visitorName);
-//        var notification = new Notification(Notification.Type.DEPARTURE, message);
-//        connections.broadcast(session, notification);
-//        connections.remove(session);
-//    }
+    private void leave(String givenUsername, Integer gameID, Session session) throws IOException {
+        var message = String.format("%s left the game", givenUsername);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, gameID, serverMessage);
+        connections.remove(gameID, session);
+    }
 //
 //    public void makeNoise(String petName, String sound) throws ResponseException {
 //        try {

@@ -24,8 +24,20 @@ public class ConnectionManager {
         connections.put(session, session);
     }
 
-    public void remove(Session session) {
+    public void remove(Integer gameID, Session session) {
         connections.remove(session);
+        Session[] previousSessions = gameConnections.get(gameID);
+        if (previousSessions != null) {
+            Session[] newSessions = new Session[previousSessions.length - 1];
+            int j = 0;
+            for (Session previousSession : previousSessions) {
+                if (previousSession != session) {
+                    newSessions[j] = previousSession;
+                    j++;
+                }
+            }
+            gameConnections.put(gameID, newSessions);
+        }
     }
 
     public void broadcast(Session excludeSession, Integer gameID, ServerMessage serverMessage) throws IOException {
