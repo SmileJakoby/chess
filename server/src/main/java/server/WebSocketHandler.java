@@ -29,7 +29,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket message received: ");
         UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
         switch (userGameCommand.getCommandType()) {
-            case CONNECT -> connect(userGameCommand.getUsername(), ctx.session);
+            case CONNECT -> connect(userGameCommand.getUsername(), userGameCommand.getPlayerColor(), ctx.session);
             //case EXIT -> exit(action.visitorName(), ctx.session);
         }
     }
@@ -39,10 +39,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(String givenUsername, Session session) throws IOException {
-        System.out.println("Got here");
+    private void connect(String givenUsername, String givenPlayerColor, Session session) throws IOException {
         connections.add(session);
-        var message = String.format("%s is in the game", givenUsername);
+        String message;
+        if (givenPlayerColor != null) {
+            message = String.format("%s joined the game as %s.", givenUsername, givenPlayerColor);
+        }
+        else {
+            message = String.format("%s is observing the game.", givenUsername);
+        }
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, serverMessage);
     }

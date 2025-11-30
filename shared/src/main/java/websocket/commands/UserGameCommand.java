@@ -20,6 +20,8 @@ public class UserGameCommand {
 
     private String username;
 
+    private String playerColor;
+
     public UserGameCommand(CommandType commandType, String authToken, Integer gameID) {
         this.commandType = commandType;
         this.authToken = authToken;
@@ -49,6 +51,12 @@ public class UserGameCommand {
     }
     public String getUsername(){
         return username;
+    }
+    public void setPlayerColor(String givenPlayerColor) {
+        playerColor = givenPlayerColor;
+    }
+    public String getPlayerColor(){
+        return playerColor;
     }
     @Override
     public boolean equals(Object o) {

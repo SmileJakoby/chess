@@ -347,6 +347,7 @@ public class ChessClient implements ServerMessageHandler {
                 JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, remoteGameID);
                 HttpResponse<String> response = SERVER_FACADE.joinGame(joinGameRequest, myAuthToken);
                 if (response.statusCode() == 200) {
+                    ws.connectToGame(myUserName, playerColor, myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
                     if (playerColor.equals("BLACK")) {
                         IS_BLACK_MAP.put(localGameID, true);
                     }
@@ -376,7 +377,7 @@ public class ChessClient implements ServerMessageHandler {
         if (commands.length >= 2) {
             try {
                 //Send connect
-                ws.connectToGame(myUserName, myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
+                ws.connectToGame(myUserName, null, myAuthToken, ID_MAP.get(Integer.parseInt(commands[1])));
                 //Observe game not fully implemented yet.
                 //The server backend isn't even built to send a game
                 //from the database yet.
@@ -525,8 +526,6 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notify(ServerMessage serverMessage) {
-        System.out.println("Received Server Message");
-        System.out.println("Received Server Message of type: " + serverMessage.getServerMessageType());
-        System.out.println("Received Server Message of: " + serverMessage);
+        System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getMessage());
     }
 }
