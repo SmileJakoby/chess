@@ -1,6 +1,5 @@
 package client;
-
-import ClientSideDataModel.*;
+import clientsidedatamodel.*;
 import chess.*;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
@@ -8,48 +7,38 @@ import model.GameData;
 import model.UserData;
 import websocket.ResponseException;
 import websocket.messages.ServerMessage;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import static client.ChessClientHelper.*;
 import static ui.EscapeSequences.*;
-
 import java.net.http.HttpResponse;
-
-
 public class ChessClient implements ServerMessageHandler {
-
     private static final int LOGGED_OUT = 0;
     private static final int LOGGED_IN = 1;
     private static final int IN_GAME = 2;
     private static final ServerFacade SERVER_FACADE = new ServerFacade();
     private static boolean hasListed = false;
-
     private static String myAuthToken = "";
-
     private static int authState = LOGGED_OUT;
     private static String myUserName = "";
     private static Integer myCurrentGameID = -1;
     private static ChessGame myCurrentGame = new ChessGame();
-
     private static final Map<Integer,Integer> ID_MAP = new HashMap<>();
     private static final Map<Integer, Boolean> IS_BLACK_MAP = new HashMap<>();
     private static final Map<Integer, Boolean> IS_WHITE_MAP = new HashMap<>();
-
     private static WebSocketFacade ws = null;
-    public ChessClient(String givenServerUrl) throws URISyntaxException, DeploymentException, IOException, ResponseException {
+    public ChessClient(String givenServerUrl) throws ResponseException {
         SERVER_FACADE.setServerURL(givenServerUrl);
         ws = new WebSocketFacade(givenServerUrl, this);
     }
     public static void run() {
         Scanner inputScanner = new Scanner(System.in);
         System.out.println("♕ 240 Chess Client. Type 'help' to get started.");
-
         String result = "";
-
         while (!result.equals("Goodbye!")) {
             if (authState == LOGGED_OUT) {
                 System.out.print("[LOGGED OUT] >>> ");
@@ -61,8 +50,6 @@ public class ChessClient implements ServerMessageHandler {
                 System.out.print("[IN GAME] >>> ");
             }
             String line = inputScanner.nextLine();
-
-
             try {
                 result = evalCLI(line);
                 System.out.print(SET_TEXT_COLOR_YELLOW + result + "\n" + SET_TEXT_COLOR_WHITE);
@@ -72,7 +59,6 @@ public class ChessClient implements ServerMessageHandler {
             }
         }
     }
-
     private static String evalCLI(String givenString)
     {
         var commands = givenString.split(" ");
@@ -121,11 +107,6 @@ public class ChessClient implements ServerMessageHandler {
                     return "Highlight not implemented";
             }
         }
-        //Redraw Chess Board
-        //Leave
-        //Todo: Make Move
-        //Parse position has been made, not tested.
-        //Resign
         //Todo: Highlight Legal Moves
         return "Unrecognized command";
     }
@@ -169,7 +150,6 @@ public class ChessClient implements ServerMessageHandler {
                     + SET_TEXT_COLOR_MAGENTA + " - Highlight all the legal moves of a piece."
                     + SET_TEXT_COLOR_WHITE);
         }
-
         return "Current state is unknown. The user should never see this message";
     }
     private static String register(String[] commands){
@@ -195,7 +175,6 @@ public class ChessClient implements ServerMessageHandler {
             return "Must provide a Username, Password, and Email.";
         }
     }
-
     private static String login(String[] commands){
         if (commands.length >= 3) {
             try {
@@ -219,7 +198,6 @@ public class ChessClient implements ServerMessageHandler {
             return "Must provide a Username and Password.";
         }
     }
-
     private static String logout(){
         try{
             HttpResponse<String> response = SERVER_FACADE.logout(myAuthToken);
@@ -240,7 +218,6 @@ public class ChessClient implements ServerMessageHandler {
             return e.getMessage();
         }
     }
-
     private static String createGame(String[] commands){
         if (commands.length >= 2) {
             try {
@@ -272,7 +249,6 @@ public class ChessClient implements ServerMessageHandler {
             return "Must provide a Name.";
         }
     }
-
     public static String listGames(){
         try{
             HttpResponse<String> response = SERVER_FACADE.listGames(myAuthToken);
@@ -329,7 +305,6 @@ public class ChessClient implements ServerMessageHandler {
             return e.getMessage();
         }
     }
-
     private static String joinGame(String[] commands){
         if (!hasListed){
             return "Unknown GameID. Make sure to use the command 'list' before trying to join or observe.";
@@ -370,7 +345,6 @@ public class ChessClient implements ServerMessageHandler {
             return "Must provide a GameID and Color.";
         }
     }
-
     private static String observeGame(String[] commands){
         if (!hasListed){
             return "Unknown GameID. Use the command 'list' or 'create' before trying to join or observe.";
@@ -395,7 +369,6 @@ public class ChessClient implements ServerMessageHandler {
             return "Must provide a GameID and Color.";
         }
     }
-
     private static String leaveGame(){
         try {
             ws.leaveGame(myUserName, myAuthToken, ID_MAP.get(myCurrentGameID));
@@ -408,7 +381,6 @@ public class ChessClient implements ServerMessageHandler {
 
         return "Left game";
     }
-
     private static String resignGame(){
         Scanner inputScanner = new Scanner(System.in);
         System.out.println("Are you sure about that? [yes|no]");
@@ -427,19 +399,14 @@ public class ChessClient implements ServerMessageHandler {
             return "That wasn't yes, so I assume it was no.";
         }
     }
-
     private static String makeMove(String[] commands){
         if (commands.length >= 3) {
-            //starting position
             ChessPosition startPos = parsePositionString(commands[1]);
-            //ending position
             ChessPosition endPos = parsePositionString(commands[2]);
-            //promotion piece
             ChessPiece.PieceType pieceType = null;
             if (commands.length == 4) {
                 pieceType = parsePromotionPiece(commands[3]);
             }
-            //Check that the move is legal
             ChessMove attemptedMove = new ChessMove(startPos, endPos, pieceType);
             try{
                 myCurrentGame.makeMove(attemptedMove);
@@ -447,7 +414,6 @@ public class ChessClient implements ServerMessageHandler {
             catch (InvalidMoveException e){
                 return "Invalid move. Type help to check usage, or use highlight to check legal moves.";
             }
-            //Send move to server
             try {
                 ws.makeMove(myUserName,myAuthToken,ID_MAP.get(myCurrentGameID),attemptedMove);
                 return "";
@@ -459,187 +425,9 @@ public class ChessClient implements ServerMessageHandler {
             return "Type help to check usage, or use highlight to check legal moves.";
         }
     }
-
-    //Redraw Chess Board
-    //Leave
-    //Make Move
-    //Resign
-    //Highlight Legal Moves
     private static String redraw(){
         return chessGameDisplay(myCurrentGame, IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID));
     }
-
-    private static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite){
-        StringBuilder boardBuilder = new StringBuilder();
-        String rowString = "    a  b  c  d  e  f  g  h    ";
-        int iStartingValue = 8;
-        int iStoppingValue = 0;
-        int iIncrementer = -1;
-        int jStartingValue = 1;
-        int jStoppingValue = 9;
-        int jIncrementer = 1;
-
-        if (isBlack && !isWhite){
-            rowString = "    h  g  f  e  d  c  b  a    ";
-            jStartingValue = 8;
-            jStoppingValue = 0;
-            jIncrementer = -1;
-            iStartingValue = 1;
-            iStoppingValue = 9;
-            iIncrementer = 1;
-        }
-        boardBuilder
-                .append(SET_BG_COLOR_LIGHT_GREY)
-                .append(SET_TEXT_COLOR_BLACK)
-                .append(rowString)
-                .append(RESET_BG_COLOR)
-                .append("\n");
-
-        for (int i = iStartingValue; i != iStoppingValue; i += iIncrementer) {
-            boardBuilder
-                    .append(SET_BG_COLOR_LIGHT_GREY)
-                    .append(SET_TEXT_COLOR_BLACK)
-                    .append(" ")
-                    .append(i)
-                    .append(" ")
-                    .append(RESET_BG_COLOR);
-            for (int j = jStartingValue; j != jStoppingValue; j += jIncrementer) {
-                String squareColor = SET_BG_COLOR_WHITE;
-                if ((i + j) % 2 == 0) {
-                    squareColor = SET_BG_COLOR_BLACK;
-                }
-                boardBuilder
-                        .append(squareColor)
-                        .append(" ")
-                        .append(drawPiece(givenGame.getBoard().getPiece(new ChessPosition(i, j))))
-                        .append(" ");
-            }
-            boardBuilder
-                    .append(SET_BG_COLOR_LIGHT_GREY)
-                    .append(SET_TEXT_COLOR_BLACK)
-                    .append(" ")
-                    .append(i)
-                    .append(" ")
-                    .append(RESET_BG_COLOR)
-                    .append("\n");
-        }
-        boardBuilder
-                .append(SET_BG_COLOR_LIGHT_GREY)
-                .append(SET_TEXT_COLOR_BLACK)
-                .append(rowString)
-                .append(RESET_BG_COLOR)
-                .append("\n");
-        return boardBuilder.toString();
-    }
-
-    private static String drawPiece(ChessPiece givenPiece){
-        if (givenPiece == null)
-        {
-            return " ";
-        }
-        switch (givenPiece.getPieceType()){
-            case KING:
-                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_COLOR_RED + "K";
-                }
-                else{
-                    return SET_TEXT_COLOR_BLUE + "K";
-                }
-            case QUEEN:
-                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_COLOR_RED + "Q";
-                }
-                else{
-                    return SET_TEXT_COLOR_BLUE + "Q";
-                }
-            case BISHOP:
-                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_COLOR_RED + "B";
-                }
-                else{
-                    return SET_TEXT_COLOR_BLUE + "B";
-                }
-            case KNIGHT:
-                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_COLOR_RED + "N";
-                }
-                else{
-                    return SET_TEXT_COLOR_BLUE + "N";
-                }
-            case ROOK:
-                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_COLOR_RED + "R";
-                }
-                else{
-                    return SET_TEXT_COLOR_BLUE + "R";
-                }
-            case PAWN:
-                if (givenPiece.getTeamColor().equals(ChessGame.TeamColor.WHITE)){
-                    return SET_TEXT_COLOR_RED + "P";
-                }
-                else{
-                    return SET_TEXT_COLOR_BLUE + "P";
-                }
-        }
-        return EMPTY;
-    }
-
-    private static ChessPosition parsePositionString(String givenString){
-        if (givenString.length() == 2){
-            int col = -1;
-            int row = -1;
-            col = switch (givenString.charAt(0)) {
-                case 'a' -> 1;
-                case 'b' -> 2;
-                case 'c' -> 3;
-                case 'd' -> 4;
-                case 'e' -> 5;
-                case 'f' -> 6;
-                case 'g' -> 7;
-                case 'h' -> 8;
-                default -> col;
-            };
-            row = switch (givenString.charAt(1)) {
-                case '1' -> 1;
-                case '2' -> 2;
-                case '3' -> 3;
-                case '4' -> 4;
-                case '5' -> 5;
-                case '6' -> 6;
-                case '7' -> 7;
-                case '8' -> 8;
-                default -> row;
-            };
-            if (col != -1 && row != -1){
-                return new ChessPosition(row, col);
-            }
-            else {
-                throw new IllegalArgumentException();
-            }
-        }
-        else{
-            throw new IllegalArgumentException();
-        }
-    }
-    public static ChessPiece.PieceType parsePromotionPiece(String givenString)
-    {
-        switch (givenString){
-            case "pawn":
-                return ChessPiece.PieceType.PAWN;
-            case "rook":
-                return ChessPiece.PieceType.ROOK;
-            case "bishop":
-                return ChessPiece.PieceType.BISHOP;
-            case "knight":
-                return ChessPiece.PieceType.KNIGHT;
-            case "queen":
-                return ChessPiece.PieceType.QUEEN;
-            case "king":
-                return ChessPiece.PieceType.KING;
-        }
-        return null;
-    }
-
     @Override
     public void notify(ServerMessage serverMessage) {
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {

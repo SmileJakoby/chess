@@ -1,4 +1,4 @@
-package ClientSideDataModel;
+package clientsidedatamodel;
 
 public record CreateGameResponse(Integer gameID) {
 }
