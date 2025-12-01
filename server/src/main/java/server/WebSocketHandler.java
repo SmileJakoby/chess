@@ -118,6 +118,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
     private void makeMove(String givenUsername, Integer gameID, ChessMove givenMove, Session session) throws IOException, DataAccessException {
+        //Todo: Go through test cases. Many require an ERROR to be sent.
+
         //Check if the player is even allowed to
         System.out.println("givenUsername: " + givenUsername);
         System.out.println("gameID: " + gameID);
@@ -179,25 +181,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         gameLoadMessage.setGame(originalGame);
         connections.broadcast(null, gameID, gameLoadMessage);
 
-
-        //Also, send an extra notification if a player is in check or checkmate. (include who is in check)
-        if (originalGame.isInCheck(ChessGame.TeamColor.BLACK)){
-            String message2;
-            message2 = String.format("%s is in check.", originalGameData.blackUsername());
-            var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
-            connections.broadcast(null, gameID, serverMessage2);
-        }
-        if (originalGame.isInCheck(ChessGame.TeamColor.WHITE)){
-            String message2;
-            message2 = String.format("%s is in check.", originalGameData.whiteUsername());
-            var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
-            connections.broadcast(null, gameID, serverMessage2);
-        }
+        //Send notification if player is in check or checkmate
         if (originalGame.isInCheckmate(ChessGame.TeamColor.BLACK)){
             String message2;
             message2 = String.format("%s is in checkmate.", originalGameData.blackUsername());
             var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
             connections.broadcast(null, gameID, serverMessage2);
+        }
+        else{
+            if (originalGame.isInCheck(ChessGame.TeamColor.BLACK)){
+                String message2;
+                message2 = String.format("%s is in check.", originalGameData.blackUsername());
+                var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
+                connections.broadcast(null, gameID, serverMessage2);
+            }
         }
         if (originalGame.isInCheckmate(ChessGame.TeamColor.WHITE)){
             String message2;
@@ -205,6 +202,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
             connections.broadcast(null, gameID, serverMessage2);
         }
+        else {
+            if (originalGame.isInCheck(ChessGame.TeamColor.WHITE)) {
+                String message2;
+                message2 = String.format("%s is in check.", originalGameData.whiteUsername());
+                var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
+                connections.broadcast(null, gameID, serverMessage2);
+            }
+        }
+
     }
 //
 //    public void makeNoise(String petName, String sound) throws ResponseException {
