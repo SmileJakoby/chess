@@ -89,17 +89,6 @@ public class GameService {
         }
         dataAccess.addPlayer(gameID, dataAccess.getAuthData(givenAuth.authToken()).username(), playerColor);
     }
-    public GameData getGameOfID(AuthData givenAuth, Integer gameID) throws UnauthorizedException, BadRequestException, DataAccessException {
-        if (dataAccess.getAuthData(givenAuth.authToken()) == null)
-        {
-            throw new UnauthorizedException("unauthorized");
-        }
-        if (dataAccess.getGame(gameID) == null || gameID == null)
-        {
-            throw new BadRequestException("bad request");
-        }
-        return dataAccess.getGame(gameID);
-    }
 
     public void makeMove(AuthData givenAuth, ChessMove givenMove, Integer gameID) throws DataAccessException, UnauthorizedException, BadRequestException {
         String authUsername;

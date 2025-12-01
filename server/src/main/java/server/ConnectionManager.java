@@ -57,17 +57,4 @@ public class ConnectionManager {
             System.out.println("Game connections does not include gameID of: " + gameID);
         }
     }
-
-    public void broadcastAll(Session excludeSession, ServerMessage serverMessage) throws IOException {
-        String msg = serverMessage.toString();
-        System.out.println("broadcast: " + msg);
-        for (Session c : connections.values()) {
-            if (c.isOpen()) {
-                if (!c.equals(excludeSession)) {
-                    c.getRemote().sendString(msg);
-                    System.out.println("Sent Message");
-                }
-            }
-        }
-    }
 }
