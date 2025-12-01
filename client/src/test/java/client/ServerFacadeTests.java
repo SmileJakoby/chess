@@ -147,7 +147,8 @@ public class ServerFacadeTests {
         GameData gameData1 = new GameData(null,null,null,"JoinGame",null);
         var response2 = facade.createGame(gameData1, registerResponse.authToken());
         assertNotNull(response2);
-        clientsidedatamodel.CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), clientsidedatamodel.CreateGameResponse.class);
+        clientsidedatamodel.CreateGameResponse createGameResponse =
+                new Gson().fromJson(response2.body(), clientsidedatamodel.CreateGameResponse.class);
         clientsidedatamodel.JoinGameRequest joinGameRequest = new clientsidedatamodel.JoinGameRequest("WHITE",createGameResponse.gameID());
         var response3 = facade.joinGame(joinGameRequest, registerResponse.authToken());
         assertEquals(200, response3.statusCode());
@@ -161,7 +162,8 @@ public class ServerFacadeTests {
         clientsidedatamodel.RegisterResponse registerResponse = new Gson().fromJson(response.body(), clientsidedatamodel.RegisterResponse.class);
         GameData gameData1 = new GameData(null,null,null,"JoinGame2",null);
         var response2 = facade.createGame(gameData1, registerResponse.authToken());
-        clientsidedatamodel.CreateGameResponse createGameResponse = new Gson().fromJson(response2.body(), clientsidedatamodel.CreateGameResponse.class);
+        clientsidedatamodel.CreateGameResponse createGameResponse =
+                new Gson().fromJson(response2.body(), clientsidedatamodel.CreateGameResponse.class);
         clientsidedatamodel.JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE",createGameResponse.gameID());
         facade.joinGame(joinGameRequest, registerResponse.authToken());
         var response3 = facade.joinGame(joinGameRequest, registerResponse.authToken());

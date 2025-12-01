@@ -194,7 +194,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             session.getRemote().sendString(serverMessage.toString());
             return;
         }
-        GameData updatedGame = new GameData(gameID, originalGameData.whiteUsername(), originalGameData.blackUsername(), originalGameData.gameName(), originalGame);
+        GameData updatedGame = new GameData(gameID, originalGameData.whiteUsername(),
+                originalGameData.blackUsername(), originalGameData.gameName(), originalGame);
         dataAccess.updateGame(gameID, updatedGame);
         //Send the new game to everyone.
         String message;

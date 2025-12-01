@@ -90,7 +90,8 @@ public class GameService {
         dataAccess.addPlayer(gameID, dataAccess.getAuthData(givenAuth.authToken()).username(), playerColor);
     }
 
-    public void makeMove(AuthData givenAuth, ChessMove givenMove, Integer gameID) throws DataAccessException, UnauthorizedException, BadRequestException {
+    public void makeMove(AuthData givenAuth, ChessMove givenMove, Integer gameID)
+            throws DataAccessException, UnauthorizedException, BadRequestException {
         String authUsername;
         if (dataAccess.getAuthData(givenAuth.authToken()) == null)
         {

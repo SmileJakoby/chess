@@ -19,7 +19,8 @@ public class ChessClientHelper {
         String rowString = "    a  b  c  d  e  f  g  h    ";
         int iStartingValue = 8; int iStoppingValue = 0; int iIncrementer = -1; int jStartingValue = 1; int jStoppingValue = 9; int jIncrementer = 1;
         if (isBlack && !isWhite){
-            rowString = "    h  g  f  e  d  c  b  a    "; jStartingValue = 8; jStoppingValue = 0; jIncrementer = -1; iStartingValue = 1; iStoppingValue = 9; iIncrementer = 1;
+            rowString = "    h  g  f  e  d  c  b  a    "; jStartingValue = 8; jStoppingValue = 0;
+            jIncrementer = -1; iStartingValue = 1; iStoppingValue = 9; iIncrementer = 1;
         }
         boardBuilder.append(SET_BG_COLOR_LIGHT_GREY).append(SET_TEXT_COLOR_BLACK).append(rowString)
                 .append(RESET_BG_COLOR).append("\n");
