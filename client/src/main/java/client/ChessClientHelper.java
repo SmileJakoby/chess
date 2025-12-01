@@ -4,17 +4,14 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
-import static ui.EscapeSequences.EMPTY;
-import static ui.EscapeSequences.RESET_BG_COLOR;
-import static ui.EscapeSequences.SET_BG_COLOR_BLACK;
-import static ui.EscapeSequences.SET_BG_COLOR_LIGHT_GREY;
-import static ui.EscapeSequences.SET_BG_COLOR_WHITE;
-import static ui.EscapeSequences.SET_TEXT_COLOR_BLACK;
-import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
-import static ui.EscapeSequences.SET_TEXT_COLOR_RED;
+import static ui.EscapeSequences.*;
 
 public class ChessClientHelper {
-    public static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite){
+    public static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite, ChessPosition[] highlightSquares, ChessPosition highlightPiece){
+        boolean highLightMode = false;
+        if (highlightSquares != null && highlightPiece != null){
+            highLightMode = true;
+        }
         StringBuilder boardBuilder = new StringBuilder();
         String rowString = "    a  b  c  d  e  f  g  h    ";
         int iStartingValue = 8; int iStoppingValue = 0; int iIncrementer = -1; int jStartingValue = 1; int jStoppingValue = 9; int jIncrementer = 1;
@@ -37,6 +34,20 @@ public class ChessClientHelper {
                 String squareColor = SET_BG_COLOR_WHITE;
                 if ((i + j) % 2 == 0) {
                     squareColor = SET_BG_COLOR_BLACK;
+                }
+                if (highLightMode)
+                {
+                    for (ChessPosition chessPosition : highlightSquares) {
+                        if (i == chessPosition.getRow() && j == chessPosition.getColumn() && (i + j) % 2 == 0){
+                            squareColor = SET_BG_COLOR_DARK_GREEN;
+                        }
+                        if (i == chessPosition.getRow() && j == chessPosition.getColumn() && (i + j) % 2 != 0){
+                            squareColor = SET_BG_COLOR_GREEN;
+                        }
+                    }
+                    if (i == highlightPiece.getRow() && j == highlightPiece.getColumn()){
+                        squareColor = SET_BG_COLOR_YELLOW;
+                    }
                 }
                 boardBuilder
                         .append(squareColor)

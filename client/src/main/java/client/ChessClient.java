@@ -10,6 +10,7 @@ import websocket.messages.ServerMessage;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -104,7 +105,7 @@ public class ChessClient implements ServerMessageHandler {
                 case "resign":
                     return resignGame();
                 case "highlight":
-                    return "Highlight not implemented";
+                    return highlightPiece(commands);
             }
         }
         //Todo: Highlight Legal Moves
@@ -426,7 +427,29 @@ public class ChessClient implements ServerMessageHandler {
         }
     }
     private static String redraw(){
-        return chessGameDisplay(myCurrentGame, IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID));
+        return chessGameDisplay(myCurrentGame, IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID), null, null);
+    }
+    private static String highlightPiece(String[] commands){
+        if (commands.length >= 2) {
+            ChessPosition highlightPosition = parsePositionString(commands[1]);
+            ChessPiece highlightPiece = myCurrentGame.getBoard().getPiece(highlightPosition);
+            if (highlightPiece == null){
+                return "No piece on that square";
+            }
+            else{
+                HashSet<ChessMove> allowedMoves = (HashSet<ChessMove>) highlightPiece.pieceMoves(myCurrentGame.getBoard(), highlightPosition);
+                ChessPosition[] allowedPositions = new ChessPosition[allowedMoves.size()];
+                int i = 0;
+                for (ChessMove chessMove : allowedMoves){
+                    allowedPositions[i] = chessMove.getEndPosition();
+                    i++;
+                }
+                return chessGameDisplay(myCurrentGame, IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID), allowedPositions, highlightPosition);
+            }
+        }
+        else{
+            return "Type help to check usage.";
+        }
     }
     @Override
     public void notify(ServerMessage serverMessage) {
@@ -435,7 +458,7 @@ public class ChessClient implements ServerMessageHandler {
         }
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME && myCurrentGameID != -1){
             myCurrentGame = serverMessage.getGame();
-            System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID)));
+            System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID), null, null));
             System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
         }
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
