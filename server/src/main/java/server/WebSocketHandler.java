@@ -137,7 +137,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
     private void makeMove(String givenUsername, Integer gameID, ChessMove givenMove, Session session) throws IOException, DataAccessException {
-
         if (overGameIDs.contains(gameID)) {
             String message;
             message = String.format("Game of ID %d is over. A player resigned.", gameID);
@@ -145,11 +144,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             session.getRemote().sendString(serverMessage.toString());
             return;
         }
-        //Check if the player is even allowed to
         System.out.println("givenUsername: " + givenUsername);
         System.out.println("gameID: " + gameID);
         System.out.println("givenMove: " + givenMove);
-
         GameData originalGameData = dataAccess.getGame(gameID);
         if (originalGameData == null) {
             String message;
@@ -205,7 +202,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var gameLoadMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null);
         gameLoadMessage.setGame(originalGame);
         connections.broadcast(null, gameID, gameLoadMessage);
-
         //Send notification if player is in check or checkmate
         if (originalGame.isInCheckmate(ChessGame.TeamColor.BLACK)){
             String message2;
