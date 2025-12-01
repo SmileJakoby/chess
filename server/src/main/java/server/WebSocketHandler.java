@@ -23,6 +23,7 @@ import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
     private final DataAccess dataAccess;
@@ -52,7 +53,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         switch (userGameCommand.getCommandType()) {
             case CONNECT -> connect(userGameCommand.getUsername(), userGameCommand.getPlayerColor(), userGameCommand.getGameID(), ctx.session);
             case LEAVE -> leave(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
-            case RESIGN -> resign(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
+            case RESIGN -> resign(dataAccess.getAuthData(userGameCommand.getAuthToken()).username(),
+                    userGameCommand.getGameID(), ctx.session);
             case MAKE_MOVE -> makeMove(dataAccess.getAuthData(userGameCommand.getAuthToken()).username(),
                     userGameCommand.getGameID(), userGameCommand.getChessMove(), ctx.session);
         }
@@ -116,6 +118,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
     private void resign(String givenUsername, Integer gameID, Session session) throws IOException, DataAccessException {
+        if (!givenUsername.equals(dataAccess.getGame(gameID).whiteUsername()) && !givenUsername.equals(dataAccess.getGame(gameID).blackUsername())) {
+            String message = "You are an observer, and not allowed to resign.";
+            var errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
         if (!overGameIDs.contains(gameID)) {
             String message;
             message = String.format("%s has resigned, good game!", givenUsername);
