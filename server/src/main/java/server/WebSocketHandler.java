@@ -166,7 +166,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             session.getRemote().sendString(serverMessage.toString());
             return;
         }
-        //Why bother checking username! Test cases don't care.
         if (originalGame.getBoard().getPiece(givenMove.getStartPosition()).getTeamColor() == ChessGame.TeamColor.WHITE) {
             if (!givenUsername.equals(originalGameData.whiteUsername())) {
                 String message;
