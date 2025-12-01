@@ -42,6 +42,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void handleMessage(WsMessageContext ctx) throws IOException, DataAccessException {
         System.out.println("Websocket message received: " + ctx.message());
         UserGameCommand userGameCommand = new Gson().fromJson(ctx.message(), UserGameCommand.class);
+        if (dataAccess.getAuthData(userGameCommand.getAuthToken()) == null)
+        {
+            String message = String.format("Not authorized. Authtoken %s is invalid.", userGameCommand.getAuthToken());
+            var errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            ctx.session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
         switch (userGameCommand.getCommandType()) {
             case CONNECT -> connect(userGameCommand.getUsername(), userGameCommand.getPlayerColor(), userGameCommand.getGameID(), ctx.session);
             case LEAVE -> leave(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
@@ -56,6 +63,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(String givenUsername, String givenPlayerColor, Integer gameID, Session session) throws IOException, DataAccessException {
+        if (dataAccess.getGame(gameID) == null){
+            String message = String.format("Game with ID %d does not exist", gameID);
+            var errorMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(errorMessage.toString());
+            return;
+        }
         connections.add(gameID, session);
         String message;
         if (givenPlayerColor != null) {
