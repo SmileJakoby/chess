@@ -1,6 +1,9 @@
 package server;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
@@ -43,6 +46,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             case CONNECT -> connect(userGameCommand.getUsername(), userGameCommand.getPlayerColor(), userGameCommand.getGameID(), ctx.session);
             case LEAVE -> leave(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
             case RESIGN -> resign(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
+            case MAKE_MOVE -> makeMove(userGameCommand.getUsername(), userGameCommand.getGameID(), userGameCommand.getChessMove(), ctx.session);
         }
     }
 
@@ -111,6 +115,90 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             message = "Other player has already resigned";
             var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
             session.getRemote().sendString(serverMessage.toString());
+        }
+    }
+    private void makeMove(String givenUsername, Integer gameID, ChessMove givenMove, Session session) throws IOException, DataAccessException {
+        //Check if the player is even allowed to
+        GameData originalGameData = dataAccess.getGame(gameID);
+        if (originalGameData == null) {
+            String message;
+            message = String.format("Game of ID %d not found", gameID);
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(serverMessage.toString());
+            return;
+        }
+        ChessGame originalGame = originalGameData.game();
+        if (originalGame.getBoard().getPiece(givenMove.getStartPosition()) == null) {
+            String message;
+            message = "Invalid move. Starting position is blank.";
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(serverMessage.toString());
+            return;
+        }
+        if (originalGame.getBoard().getPiece(givenMove.getStartPosition()).getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (!givenUsername.equals(originalGameData.whiteUsername())) {
+                String message;
+                message = "Invalid move. You are not white player.";
+                var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(serverMessage.toString());
+                return;
+            }
+        }
+        if (originalGame.getBoard().getPiece(givenMove.getStartPosition()).getTeamColor() == ChessGame.TeamColor.BLACK) {
+            if (!givenUsername.equals(originalGameData.blackUsername())) {
+                String message;
+                message = "Invalid move. You are not black player.";
+                var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(serverMessage.toString());
+                return;
+            }
+        }
+        try{
+            originalGame.makeMove(givenMove);
+        }
+        catch(InvalidMoveException e){
+            String message;
+            message = "That's literally just an illegal move.";
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(serverMessage.toString());
+            return;
+        }
+        GameData updatedGame = new GameData(gameID, originalGameData.whiteUsername(), originalGameData.blackUsername(), originalGameData.gameName(), originalGame);
+        dataAccess.updateGame(gameID, updatedGame);
+        //Send the new game to everyone.
+        String message;
+        message = String.format("%s made move %s.", givenUsername, givenMove.toString());
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, gameID, serverMessage);
+        var gameLoadMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null);
+        gameLoadMessage.setGame(originalGame);
+        connections.broadcast(null, gameID, gameLoadMessage);
+
+
+        //Also, send an extra notification if a player is in check or checkmate. (include who is in check)
+        if (originalGame.isInCheck(ChessGame.TeamColor.BLACK)){
+            String message2;
+            message2 = String.format("%s is in check.", originalGameData.blackUsername());
+            var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
+            connections.broadcast(null, gameID, serverMessage2);
+        }
+        if (originalGame.isInCheck(ChessGame.TeamColor.WHITE)){
+            String message2;
+            message2 = String.format("%s is in check.", originalGameData.whiteUsername());
+            var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
+            connections.broadcast(null, gameID, serverMessage2);
+        }
+        if (originalGame.isInCheckmate(ChessGame.TeamColor.BLACK)){
+            String message2;
+            message2 = String.format("%s is in checkmate.", originalGameData.blackUsername());
+            var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
+            connections.broadcast(null, gameID, serverMessage2);
+        }
+        if (originalGame.isInCheckmate(ChessGame.TeamColor.WHITE)){
+            String message2;
+            message2 = String.format("%s is in checkmate.", originalGameData.whiteUsername());
+            var serverMessage2 = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message2);
+            connections.broadcast(null, gameID, serverMessage2);
         }
     }
 //

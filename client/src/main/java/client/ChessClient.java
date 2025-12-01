@@ -1,9 +1,7 @@
 package client;
 
 import ClientSideDataModel.*;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import com.google.gson.Gson;
 import jakarta.websocket.*;
 import model.GameData;
@@ -116,7 +114,7 @@ public class ChessClient implements ServerMessageHandler {
                 case "leave":
                     return leaveGame();
                 case "move":
-                    return "Move not implemented";
+                    return makeMove(commands);
                 case "resign":
                     return resignGame();
                 case "highlight":
@@ -125,9 +123,10 @@ public class ChessClient implements ServerMessageHandler {
         }
         //Redraw Chess Board
         //Leave
-        //Make Move
+        //Todo: Make Move
+        //Parse position has been made, not tested.
         //Resign
-        //Highlight Legal Moves
+        //Todo: Highlight Legal Moves
         return "Unrecognized command";
     }
     private static String printHelp(){
@@ -429,6 +428,38 @@ public class ChessClient implements ServerMessageHandler {
         }
     }
 
+    private static String makeMove(String[] commands){
+        if (commands.length >= 3) {
+            //starting position
+            ChessPosition startPos = parsePositionString(commands[1]);
+            //ending position
+            ChessPosition endPos = parsePositionString(commands[2]);
+            //promotion piece
+            ChessPiece.PieceType pieceType = null;
+            if (commands.length == 4) {
+                pieceType = parsePromotionPiece(commands[3]);
+            }
+            //Check that the move is legal
+            ChessMove attemptedMove = new ChessMove(startPos, endPos, pieceType);
+            try{
+                myCurrentGame.makeMove(attemptedMove);
+            }
+            catch (InvalidMoveException e){
+                return "Invalid move. Type help to check usage, or use highlight to check legal moves.";
+            }
+            //Send move to server
+            try {
+                ws.makeMove(myUserName,myAuthToken,ID_MAP.get(myCurrentGameID),attemptedMove);
+                return "";
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        }
+        else{
+            return "Type help to check usage, or use highlight to check legal moves.";
+        }
+    }
+
     //Redraw Chess Board
     //Leave
     //Make Move
@@ -551,6 +582,62 @@ public class ChessClient implements ServerMessageHandler {
                 }
         }
         return EMPTY;
+    }
+
+    private static ChessPosition parsePositionString(String givenString){
+        if (givenString.length() == 2){
+            int col = -1;
+            int row = -1;
+            col = switch (givenString.charAt(0)) {
+                case 'a' -> 1;
+                case 'b' -> 2;
+                case 'c' -> 3;
+                case 'd' -> 4;
+                case 'e' -> 5;
+                case 'f' -> 6;
+                case 'g' -> 7;
+                case 'h' -> 8;
+                default -> col;
+            };
+            row = switch (givenString.charAt(1)) {
+                case '1' -> 1;
+                case '2' -> 2;
+                case '3' -> 3;
+                case '4' -> 4;
+                case '5' -> 5;
+                case '6' -> 6;
+                case '7' -> 7;
+                case '8' -> 8;
+                default -> row;
+            };
+            if (col != -1 && row != -1){
+                return new ChessPosition(row, col);
+            }
+            else {
+                throw new IllegalArgumentException();
+            }
+        }
+        else{
+            throw new IllegalArgumentException();
+        }
+    }
+    public static ChessPiece.PieceType parsePromotionPiece(String givenString)
+    {
+        switch (givenString){
+            case "pawn":
+                return ChessPiece.PieceType.PAWN;
+            case "rook":
+                return ChessPiece.PieceType.ROOK;
+            case "bishop":
+                return ChessPiece.PieceType.BISHOP;
+            case "knight":
+                return ChessPiece.PieceType.KNIGHT;
+            case "queen":
+                return ChessPiece.PieceType.QUEEN;
+            case "king":
+                return ChessPiece.PieceType.KING;
+        }
+        return null;
     }
 
     @Override
