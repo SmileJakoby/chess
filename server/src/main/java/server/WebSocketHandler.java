@@ -53,7 +53,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             case CONNECT -> connect(userGameCommand.getUsername(), userGameCommand.getPlayerColor(), userGameCommand.getGameID(), ctx.session);
             case LEAVE -> leave(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
             case RESIGN -> resign(userGameCommand.getUsername(), userGameCommand.getGameID(), ctx.session);
-            case MAKE_MOVE -> makeMove(userGameCommand.getUsername(), userGameCommand.getGameID(), userGameCommand.getChessMove(), ctx.session);
+            case MAKE_MOVE -> makeMove(dataAccess.getAuthData(userGameCommand.getAuthToken()).username(),
+                    userGameCommand.getGameID(), userGameCommand.getChessMove(), ctx.session);
         }
     }
 
@@ -131,8 +132,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
     private void makeMove(String givenUsername, Integer gameID, ChessMove givenMove, Session session) throws IOException, DataAccessException {
-        //Todo: Go through test cases. Many require an ERROR to be sent.
 
+        if (overGameIDs.contains(gameID)) {
+            String message;
+            message = String.format("Game of ID %d is over. A player resigned.", gameID);
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+            session.getRemote().sendString(serverMessage.toString());
+            return;
+        }
         //Check if the player is even allowed to
         System.out.println("givenUsername: " + givenUsername);
         System.out.println("gameID: " + gameID);
@@ -155,24 +162,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         //Why bother checking username! Test cases don't care.
-//        if (originalGame.getBoard().getPiece(givenMove.getStartPosition()).getTeamColor() == ChessGame.TeamColor.WHITE) {
-//            if (!givenUsername.equals(originalGameData.whiteUsername())) {
-//                String message;
-//                message = "Invalid move. You are not white player.";
-//                var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
-//                session.getRemote().sendString(serverMessage.toString());
-//                return;
-//            }
-//        }
-//        if (originalGame.getBoard().getPiece(givenMove.getStartPosition()).getTeamColor() == ChessGame.TeamColor.BLACK) {
-//            if (!givenUsername.equals(originalGameData.blackUsername())) {
-//                String message;
-//                message = "Invalid move. You are not black player.";
-//                var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
-//                session.getRemote().sendString(serverMessage.toString());
-//                return;
-//            }
-//        }
+        if (originalGame.getBoard().getPiece(givenMove.getStartPosition()).getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (!givenUsername.equals(originalGameData.whiteUsername())) {
+                String message;
+                message = "Invalid move. You are not white player.";
+                var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(serverMessage.toString());
+                return;
+            }
+        }
+        if (originalGame.getBoard().getPiece(givenMove.getStartPosition()).getTeamColor() == ChessGame.TeamColor.BLACK) {
+            if (!givenUsername.equals(originalGameData.blackUsername())) {
+                String message;
+                message = "Invalid move. You are not black player.";
+                var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, message);
+                session.getRemote().sendString(serverMessage.toString());
+                return;
+            }
+        }
         try{
             originalGame.makeMove(givenMove);
         }
