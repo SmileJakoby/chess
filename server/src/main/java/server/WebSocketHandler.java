@@ -236,14 +236,4 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
 
     }
-//
-//    public void makeNoise(String petName, String sound) throws ResponseException {
-//        try {
-//            var message = String.format("%s says %s", petName, sound);
-//            var notification = new Notification(Notification.Type.NOISE, message);
-//            connections.broadcast(null, notification);
-//        } catch (Exception ex) {
-//            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-//        }
-//    }
 }
