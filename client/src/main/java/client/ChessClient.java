@@ -7,8 +7,6 @@ import model.GameData;
 import model.UserData;
 import websocket.ResponseException;
 import websocket.messages.ServerMessage;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -143,8 +141,9 @@ public class ChessClient implements ServerMessageHandler {
                     + SET_TEXT_COLOR_MAGENTA + " - Redraw the chess board\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "leave"
                     + SET_TEXT_COLOR_MAGENTA + " - Leave the game. Does not count as a resign.\n" +
-                    "  " + SET_TEXT_COLOR_BLUE + "move <Start Position> <End Position>"
+                    "  " + SET_TEXT_COLOR_BLUE + "move <Start Position> <End Position> <PromotionChoice>"
                     + SET_TEXT_COLOR_MAGENTA + " - Make a move, moving a piece from one position to another.\n" +
+                    "  " +  "PromotionChoice is only needed when moving pawn to back row. Type the exact name of the piece you want it to become when you do.\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "resign"
                     + SET_TEXT_COLOR_MAGENTA + " - Forfeit; surrender; give up; admit defeat; lose all masculinity.\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "Highlight <Position>"
@@ -444,7 +443,8 @@ public class ChessClient implements ServerMessageHandler {
                     allowedPositions[i] = chessMove.getEndPosition();
                     i++;
                 }
-                return chessGameDisplay(myCurrentGame, IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID), allowedPositions, highlightPosition);
+                return chessGameDisplay(myCurrentGame, IS_BLACK_MAP.get(myCurrentGameID),
+                        IS_WHITE_MAP.get(myCurrentGameID), allowedPositions, highlightPosition);
             }
         }
         else{
@@ -458,7 +458,8 @@ public class ChessClient implements ServerMessageHandler {
         }
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME && myCurrentGameID != -1){
             myCurrentGame = serverMessage.getGame();
-            System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID), IS_WHITE_MAP.get(myCurrentGameID), null, null));
+            System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID),
+                    IS_WHITE_MAP.get(myCurrentGameID), null, null));
             System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
         }
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {

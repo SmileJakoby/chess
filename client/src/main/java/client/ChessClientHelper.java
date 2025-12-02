@@ -7,7 +7,8 @@ import chess.ChessPosition;
 import static ui.EscapeSequences.*;
 
 public class ChessClientHelper {
-    public static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite, ChessPosition[] highlightSquares, ChessPosition highlightPiece){
+    public static String chessGameDisplay(ChessGame givenGame, Boolean isBlack, Boolean isWhite,
+                                          ChessPosition[] highlightSquares, ChessPosition highlightPiece){
         boolean highLightMode = false;
         if (highlightSquares != null && highlightPiece != null){
             highLightMode = true;
@@ -37,17 +38,7 @@ public class ChessClientHelper {
                 }
                 if (highLightMode)
                 {
-                    for (ChessPosition chessPosition : highlightSquares) {
-                        if (i == chessPosition.getRow() && j == chessPosition.getColumn() && (i + j) % 2 == 0){
-                            squareColor = SET_BG_COLOR_DARK_GREEN;
-                        }
-                        if (i == chessPosition.getRow() && j == chessPosition.getColumn() && (i + j) % 2 != 0){
-                            squareColor = SET_BG_COLOR_GREEN;
-                        }
-                    }
-                    if (i == highlightPiece.getRow() && j == highlightPiece.getColumn()){
-                        squareColor = SET_BG_COLOR_YELLOW;
-                    }
+                    squareColor = highlightFunction(highlightSquares, highlightPiece, squareColor, i, j);
                 }
                 boardBuilder
                         .append(squareColor)
@@ -71,6 +62,21 @@ public class ChessClientHelper {
                 .append(RESET_BG_COLOR)
                 .append("\n");
         return boardBuilder.toString();
+    }
+    public static String highlightFunction(ChessPosition[] highlightSquares, ChessPosition highlightPiece, String initialColor, int i, int j){
+        String squareColor = initialColor;
+        for (ChessPosition chessPosition : highlightSquares) {
+            if (i == chessPosition.getRow() && j == chessPosition.getColumn() && (i + j) % 2 == 0){
+                squareColor = SET_BG_COLOR_DARK_GREEN;
+            }
+            if (i == chessPosition.getRow() && j == chessPosition.getColumn() && (i + j) % 2 != 0){
+                squareColor = SET_BG_COLOR_GREEN;
+            }
+        }
+        if (i == highlightPiece.getRow() && j == highlightPiece.getColumn()){
+            squareColor = SET_BG_COLOR_YELLOW;
+        }
+        return squareColor;
     }
     public static String drawPiece(ChessPiece givenPiece){
         if (givenPiece == null)
