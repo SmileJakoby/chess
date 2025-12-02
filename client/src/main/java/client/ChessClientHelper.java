@@ -169,12 +169,10 @@ public class ChessClientHelper {
     public static ChessPiece.PieceType parsePromotionPiece(String givenString)
     {
         return switch (givenString) {
-            case "pawn" -> ChessPiece.PieceType.PAWN;
             case "rook" -> ChessPiece.PieceType.ROOK;
             case "bishop" -> ChessPiece.PieceType.BISHOP;
             case "knight" -> ChessPiece.PieceType.KNIGHT;
             case "queen" -> ChessPiece.PieceType.QUEEN;
-            case "king" -> ChessPiece.PieceType.KING;
             default -> null;
         };
     }

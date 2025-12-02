@@ -143,7 +143,8 @@ public class ChessClient implements ServerMessageHandler {
                     + SET_TEXT_COLOR_MAGENTA + " - Leave the game. Does not count as a resign.\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "move <Start Position> <End Position> <PromotionChoice>"
                     + SET_TEXT_COLOR_MAGENTA + " - Make a move, moving a piece from one position to another.\n" +
-                    "  " +  "PromotionChoice is only needed when moving pawn to back row. Type the exact name of the piece you want it to become when you do.\n" +
+                    "  " +  "PromotionChoice is only needed when moving pawn to back row. " +
+                    "Type the exact name of the piece you want it to become when you do.\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "resign"
                     + SET_TEXT_COLOR_MAGENTA + " - Forfeit; surrender; give up; admit defeat; lose all masculinity.\n" +
                     "  " + SET_TEXT_COLOR_BLUE + "Highlight <Position>"
@@ -453,17 +454,21 @@ public class ChessClient implements ServerMessageHandler {
     }
     @Override
     public void notify(ServerMessage serverMessage) {
+        System.out.println();
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
             System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getMessage());
+            System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
         }
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME && myCurrentGameID != -1){
             myCurrentGame = serverMessage.getGame();
+
             System.out.println(chessGameDisplay(serverMessage.getGame(), IS_BLACK_MAP.get(myCurrentGameID),
                     IS_WHITE_MAP.get(myCurrentGameID), null, null));
             System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
         }
         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
             System.out.println(serverMessage.getServerMessageType() + ": " + serverMessage.getErrorMessage());
+            System.out.print(SET_TEXT_COLOR_WHITE + "[IN GAME] >>> ");
         }
     }
 }
